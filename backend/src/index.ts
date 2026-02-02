@@ -2,21 +2,21 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
+import { CORS_CONFIG } from './config.js';
+ './config.js'
+ 
+const PORT = process.env.SERVER_PORT;
 
 // Setting up Express App
 const app = express();
-app.use(cors({
-  origin: "http://localhost:2904"
-}));
+app.use(cors(CORS_CONFIG));
 
-// Setting up websocket connection
+// Setting up Socket.io server
 const server = createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: ["http://localhost:2904"]
-  }
+  cors: CORS_CONFIG
 });
-const PORT = process.env.SERVER_PORT;
+
 
 app.get('/', (req, res) => {
   res.status(200);
