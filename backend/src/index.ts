@@ -29,6 +29,11 @@ app.get("/api", (req, res) => {
 
 io.on("connection", (socket) => {
   console.log("A user connected");
+  
+  socket.on("add_line", (data) => {
+    console.log("send");
+    io.emit("update", data);
+  })
 });
 
 server.listen(PORT, () => {

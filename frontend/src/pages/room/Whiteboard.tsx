@@ -1,9 +1,19 @@
 import Konva from "konva";
 import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Line, Text, Transformer, Rect } from "react-konva";
+import socket from "../../socket";
 
 export type DrawMode = "draw" | "erase";
+
+function isMode(s: string): s is DrawMode {
+  return s === "draw" || s === "erase";
+}
+
 export type Color = "red" | "blue" | "black";
+
+function isColor(s: string): s is Color {
+  return s === "red" || s === "blue" || s === "black";
+}
 
 export interface Line {
   mode: DrawMode;
@@ -21,23 +31,13 @@ function Whiteboard() {
   const state = {
     canvasWidth: 1500,
     canvasHeight: 1000,
-    image: ""
+    image: "",
   };
 
-  const [size, setSize] = useState({ width: window.innerWidth, height: window.innerHeight });
-
-  useEffect(() => {
-    const checkSize = () => {
-        setSize({
-          width: window.innerWidth,
-          height: window.innerHeight,
-        });
-    };
-
-    window.addEventListener('resize', checkSize);
-    return () => window.removeEventListener('resize', checkSize);
-  }, []);
-
+  const [size, setSize] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
   // do your calculations for stage properties
   const stageWidth = size.width;
   const stageHeight = size.height;
@@ -46,11 +46,53 @@ function Whiteboard() {
   const [color, setColor] = useState<Color>("black");
   const [brushSize, setBrushSize] = useState<number>(5);
   const [lines, setLines] = useState<Line[]>([]);
-  const [pointer, setPointer] = useState<Point>();
+  const [currentLine, setCurrentLine] = useState<Line>();
 
   const isDrawing = useRef<boolean>(false);
   const stageRef = useRef<Konva.Stage>(null);
   const layerRef = useRef<Konva.Layer>(null);
+
+  useEffect(() => {
+    const checkSize = () => {
+      setSize({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    window.addEventListener("resize", checkSize);
+    return () => window.removeEventListener("resize", checkSize);
+  }, []);
+
+  useEffect(() => {
+    function onUpdate({
+      mode,
+      color,
+      size,
+      points,
+    }: {
+      mode: string;
+      color: string;
+      size: number;
+      points: number[];
+    }) {
+      if (!isColor(color) && !isMode(mode)) return;
+
+      const line: Line = {
+        mode: mode as DrawMode,
+        color: color as Color,
+        size: size,
+        points: points,
+      };
+
+      setLines([...lines, line]);
+    }
+    socket.on("update", onUpdate);
+
+    return () => {
+      socket.off("update", onUpdate);
+    };
+  }, [lines]);
 
   useEffect(() => {
     Konva.dragButtons = [2];
@@ -61,12 +103,9 @@ function Whiteboard() {
     }
   }, []);
 
-  const handleMouseDown = (
-    e: Konva.KonvaEventObject<MouseEvent>,
-  ) => {
-    if (e.evt.button === 2) 
-      return;
-    
+  const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    if (e.evt.button === 2) return;
+
     isDrawing.current = true;
     const pos = e.target.getLayer()?.getRelativePointerPosition();
 
@@ -76,32 +115,41 @@ function Whiteboard() {
       size: brushSize,
       points: [pos!.x, pos!.y],
     };
-    setLines([...lines, line]);
+    setCurrentLine(line);
   };
 
   const handleMouseMove = (
     e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
     if (!isDrawing.current) return;
-    
+
     const pos = e.target.getLayer()?.getRelativePointerPosition();
 
-    const lastLine = lines[lines.length - 1];
-    const next = lines.slice(0, -1);
+    if (currentLine !== undefined) {
+      const newLine: Line = {
+        ...currentLine,
+        points: [...currentLine.points, pos!.x, pos!.y],
+      };
 
-    const newLine: Line = {
-      ...lastLine,
-      points: [...lastLine.points, pos!.x, pos!.y],
-    };
-
-    setLines([...next, newLine]);
+      setCurrentLine(newLine);
+    }
   };
-
 
   const handleMouseUp = (
     e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
     isDrawing.current = false;
+    if (currentLine === undefined) return;
+
+    const data = {
+      mode: currentLine.mode as string,
+      color: currentLine.color as string,
+      size: currentLine.size,
+      points: currentLine.points,
+    };
+
+    setCurrentLine(undefined);
+    socket.emit("add_line", data);
   };
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
@@ -143,13 +191,14 @@ function Whiteboard() {
         ref={stageRef}
         width={stageWidth}
         height={stageHeight}
-        
-        onContextMenu={(e: Konva.KonvaEventObject<PointerEvent>) => {e.evt.preventDefault()}}
+        onContextMenu={(e: Konva.KonvaEventObject<PointerEvent>) => {
+          e.evt.preventDefault();
+        }}
         draggable
         onWheel={handleWheel}
         onMouseup={handleMouseUp}
       >
-        <Layer 
+        <Layer
           width={state.canvasWidth}
           height={state.canvasHeight}
           ref={layerRef}
@@ -161,27 +210,39 @@ function Whiteboard() {
           <Rect
             width={state.canvasWidth}
             height={state.canvasHeight}
-            fill={'white'}
-          >
-          </Rect>
+            fill={"white"}
+          ></Rect>
           {lines.map((line, i) => (
-              <Line
-                key={i}
-                points={line.points}
-                stroke={line.color}
-                strokeWidth={line.size}
-                tension={0.5}
-                lineCap="round"
-                lineJoin="round"
-                globalCompositeOperation={
-                  line.mode === "erase" ? "destination-out" : "source-over"
-                }
-              />
-            ))}
+            <Line
+              key={i}
+              points={line.points}
+              stroke={line.color}
+              strokeWidth={line.size}
+              tension={0.5}
+              lineCap="round"
+              lineJoin="round"
+              globalCompositeOperation={
+                line.mode === "erase" ? "destination-out" : "source-over"
+              }
+            />
+          ))}
 
+          {currentLine && (
+            <Line
+              key={lines.length}
+              points={currentLine.points}
+              stroke={currentLine.color}
+              strokeWidth={currentLine.size}
+              tension={0.5}
+              lineCap="round"
+              lineJoin="round"
+              globalCompositeOperation={
+                currentLine.mode === "erase" ? "destination-out" : "source-over"
+              }
+            />
+          )}
         </Layer>
       </Stage>
-
     </div>
   );
 }
