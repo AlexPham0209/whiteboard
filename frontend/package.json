@@ -10,12 +10,14 @@
     "preview": "vite preview --port 2904 --host 0.0.0.0"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.1.18",
     "axios": "^1.13.4",
     "konva": "^10.2.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-konva": "^19.2.1",
-    "socket.io-client": "^4.8.3"
+    "socket.io-client": "^4.8.3",
+    "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

@@ -1,4 +1,4 @@
-import { io } from 'socket.io-client';
+import { io } from "socket.io-client";
 
 const PORT = import.meta.env.VITE_SERVER_PORT;
 const URL = import.meta.env.PROD ? undefined : `http://localhost:${PORT}`;

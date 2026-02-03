@@ -1,4 +1,3 @@
 export const CORS_CONFIG = {
-    origin: ["http://localhost:2904"]
-}
-
+  origin: ["http://localhost:2904"],
+};

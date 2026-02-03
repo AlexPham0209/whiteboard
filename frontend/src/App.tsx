@@ -1,11 +1,11 @@
-import { useEffect, useState } from 'react'
-import socket from './socket';
-import axios from 'axios';
-import Whiteboard from './canvas/Whiteboard';
+import { useEffect, useState } from "react";
+import socket from "./socket";
+import axios from "axios";
+import Whiteboard from "./pages/room/Whiteboard";
 
 function App() {
   const [isConnected, setIsConnected] = useState(socket.connected);
-  
+
   useEffect(() => {
     function onConnect() {
       setIsConnected(true);
@@ -14,26 +14,23 @@ function App() {
     function onDisconnect() {
       setIsConnected(false);
     }
-    
-    socket.on('connect', onConnect);
-    socket.on('disconnect', onDisconnect);
 
-    axios.get('http://localhost:3000/api').then(
-      (res) => console.log(res.data)
-    );
+    socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
+
+    axios.get("http://localhost:3000/api").then((res) => console.log(res.data));
 
     return () => {
-      socket.off('connect', onConnect);
-      socket.off('disconnect', onDisconnect);
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
     };
   }, []);
 
-
   return (
     <div>
-      <Whiteboard/>
+      <Whiteboard />
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
