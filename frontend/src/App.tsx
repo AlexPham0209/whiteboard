@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import socket from './socket';
 import axios from 'axios';
+import Whiteboard from './canvas/Whiteboard';
 
 function App() {
   const [isConnected, setIsConnected] = useState(socket.connected);
@@ -27,9 +28,10 @@ function App() {
     };
   }, []);
 
+
   return (
     <div>
-    
+      <Whiteboard/>
     </div>
   )
 }
