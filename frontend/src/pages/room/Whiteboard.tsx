@@ -50,6 +50,7 @@ function Whiteboard() {
 
   const isDrawing = useRef<boolean>(false);
   const stageRef = useRef<Konva.Stage>(null);
+  const layerRef = useRef<Konva.Layer>(null);
 
   useEffect(() => {
     Konva.dragButtons = [2];
@@ -96,14 +97,48 @@ function Whiteboard() {
     setLines([...next, newLine]);
   };
 
+
   const handleMouseUp = (
     e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
     isDrawing.current = false;
   };
 
+  const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
+    e.evt.preventDefault();
+
+    const stage = stageRef.current;
+    const oldScale = stage?.scaleX();
+    const pointer = stage?.getPointerPosition();
+
+    const mousePointTo = {
+      x: (pointer!.x - stage!.x()) / oldScale!,
+      y: (pointer!.y - stage!.y()) / oldScale!,
+    };
+
+    // how to scale? Zoom in? Or zoom out?
+    let direction = e.evt.deltaY > 0 ? -1 : 1;
+
+    // when we zoom on trackpad, e.evt.ctrlKey is true
+    // in that case lets revert direction
+    if (e.evt.ctrlKey) {
+      direction = -direction;
+    }
+
+    const scaleBy = 1.05;
+    const newScale = direction > 0 ? oldScale! * scaleBy : oldScale! / scaleBy;
+
+    stage!.scale({ x: newScale, y: newScale });
+
+    const newPos = {
+      x: pointer!.x - mousePointTo.x * newScale,
+      y: pointer!.y - mousePointTo.y * newScale,
+    };
+    stage!.position(newPos);
+  };
+
   return (
-    <div className="w-full h-full flex ju">
+    <div className="w-full h-full flex justify-center">
       <Stage
         ref={stageRef}
         width={stageWidth}
@@ -111,14 +146,17 @@ function Whiteboard() {
         
         onContextMenu={(e: Konva.KonvaEventObject<PointerEvent>) => {e.evt.preventDefault()}}
         draggable
+        onWheel={handleWheel}
+        onMouseup={handleMouseUp}
       >
         <Layer 
           width={state.canvasWidth}
           height={state.canvasHeight}
+          ref={layerRef}
+          clipWidth={state.canvasWidth}
+          clipHeight={state.canvasHeight}
           onMouseDown={handleMouseDown}
           onMousemove={handleMouseMove}
-          onMouseup={handleMouseUp}
-          onMouseLeave={() => {isDrawing.current = false;}}
         >
           <Rect
             width={state.canvasWidth}
