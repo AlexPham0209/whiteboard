@@ -1,35 +1,26 @@
 import { useEffect, useState } from "react";
 import socket from "./socket";
 import axios from "axios";
-import Whiteboard from "./pages/room/Whiteboard";
+import Whiteboard from "./pages/Whiteboard";
+import Join from "./pages/Join";
+import { BrowserRouter, HashRouter, Navigate, Route, Router, Routes, useLocation } from "react-router-dom";
+import Create from "./pages/Create";
 
-function App() {
-  const [isConnected, setIsConnected] = useState(socket.connected);
-
-  useEffect(() => {
-    function onConnect() {
-      setIsConnected(true);
-    }
-
-    function onDisconnect() {
-      setIsConnected(false);
-    }
-
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-
-    axios.get("http://localhost:3000/api").then((res) => console.log(res.data));
-
-    return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-    };
-  }, []);
-
+function Pages() {
   return (
-    <div>
-      <Whiteboard />
-    </div>
+    <Routes location={useLocation()} key={useLocation().pathname}>
+      <Route path="*" element={<Navigate to="/join" />} />
+      <Route path="/join" element={<Join />} />
+      <Route path="/create" element={<Create />} />
+      <Route path="/:code" element={<Whiteboard />} />
+    </Routes>
+  )
+}
+function App() {
+  return (
+    <HashRouter>
+      <Pages/>
+    </HashRouter>
   );
 }
 

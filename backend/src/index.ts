@@ -21,19 +21,20 @@ app.get("/", (req, res) => {
   res.status(200);
 });
 
-app.get("/api", (req, res) => {
-  res.json({
-    data: "hello",
-  });
-});
-
 io.on("connection", (socket) => {
   console.log("A user connected");
-  
+
+  socket.on("", (data) => {});
+
+  socket.on("join_room", (data) => {});
+
+  socket.on("leave_room", (data) => {});
+
+  socket.on("get_canvas", (data) => {});
+
   socket.on("add_line", (data) => {
-    console.log("send");
     io.emit("update", data);
-  })
+  });
 });
 
 server.listen(PORT, () => {

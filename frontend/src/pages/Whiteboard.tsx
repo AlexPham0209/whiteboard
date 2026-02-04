@@ -1,7 +1,7 @@
 import Konva from "konva";
 import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Line, Text, Transformer, Rect } from "react-konva";
-import socket from "../../socket";
+import socket from "../socket";
 
 export type DrawMode = "draw" | "erase";
 
@@ -42,16 +42,19 @@ function Whiteboard() {
   const stageWidth = size.width;
   const stageHeight = size.height;
 
+  //Brush settings
   const [mode, setMode] = useState<DrawMode>("draw");
   const [color, setColor] = useState<Color>("black");
   const [brushSize, setBrushSize] = useState<number>(5);
   const [lines, setLines] = useState<Line[]>([]);
   const [currentLine, setCurrentLine] = useState<Line>();
 
+  // Object references
   const isDrawing = useRef<boolean>(false);
   const stageRef = useRef<Konva.Stage>(null);
   const layerRef = useRef<Konva.Layer>(null);
 
+  // Dynamic stage resizing
   useEffect(() => {
     const checkSize = () => {
       setSize({
@@ -64,6 +67,7 @@ function Whiteboard() {
     return () => window.removeEventListener("resize", checkSize);
   }, []);
 
+  // Socket.io events
   useEffect(() => {
     function onUpdate({
       mode,
@@ -94,6 +98,7 @@ function Whiteboard() {
     };
   }, [lines]);
 
+  // Altering stage
   useEffect(() => {
     Konva.dragButtons = [2];
     if (stageRef.current) {
@@ -103,6 +108,7 @@ function Whiteboard() {
     }
   }, []);
 
+  // Navigation and drawing functions
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
     if (e.evt.button === 2) return;
 
@@ -118,11 +124,12 @@ function Whiteboard() {
     setCurrentLine(line);
   };
 
-  const handleMouseMove = (
+  const handleMouseMove = async (
     e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
   ) => {
     if (!isDrawing.current) return;
 
+    await new Promise((resolve) => setTimeout(resolve, 15));
     const pos = e.target.getLayer()?.getRelativePointerPosition();
 
     if (currentLine !== undefined) {
@@ -156,12 +163,17 @@ function Whiteboard() {
     e.evt.preventDefault();
 
     const stage = stageRef.current;
-    const oldScale = stage?.scaleX();
-    const pointer = stage?.getPointerPosition();
+
+    if (stage === null) return;
+
+    const oldScale = stage.scaleX();
+    const pointer = stage.getPointerPosition();
+
+    if (pointer === null) return;
 
     const mousePointTo = {
-      x: (pointer!.x - stage!.x()) / oldScale!,
-      y: (pointer!.y - stage!.y()) / oldScale!,
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale,
     };
 
     // how to scale? Zoom in? Or zoom out?
@@ -176,11 +188,11 @@ function Whiteboard() {
     const scaleBy = 1.05;
     const newScale = direction > 0 ? oldScale! * scaleBy : oldScale! / scaleBy;
 
-    stage!.scale({ x: newScale, y: newScale });
+    stage.scale({ x: newScale, y: newScale });
 
     const newPos = {
-      x: pointer!.x - mousePointTo.x * newScale,
-      y: pointer!.y - mousePointTo.y * newScale,
+      x: pointer.x - mousePointTo.x * newScale,
+      y: pointer.y - mousePointTo.y * newScale,
     };
     stage!.position(newPos);
   };
