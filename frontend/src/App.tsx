@@ -16,20 +16,16 @@ import Create from "./pages/Create";
 
 function Pages() {
   const location = useLocation();
+  const [joined, setJoined] = useState(false);
+
   return (
     <Routes location={location} key={location.pathname}>
-      <Route path="*" element={<Navigate to="/join" />} />
-      <Route path="/join" element={<Join />} />
+      <Route path="*" element={<Navigate to={joined ? "/draw" : "/join"} />} />
+      <Route path="/join" element={<Join setJoined={setJoined} />} />
       <Route path="/create" element={<Create />} />
       <Route
         path="/draw"
-        element={
-          sessionStorage.getItem("test") ? (
-            <Whiteboard />
-          ) : (
-            <Navigate to="/join" />
-          )
-        }
+        element={joined ? <Whiteboard /> : <Navigate to="/join" />}
       />
     </Routes>
   );

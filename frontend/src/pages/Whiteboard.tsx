@@ -1,39 +1,19 @@
 import Konva from "konva";
 import { useEffect, useRef, useState } from "react";
-import { Stage, Layer, Line, Text, Transformer, Rect } from "react-konva";
+import { Stage, Layer, Text, Transformer, Rect } from "react-konva";
 import socket from "../socket";
+import {
+  toKonvaLine,
+  toLine,
+  type Color,
+  type DrawMode,
+  type Line,
+} from "./line.tsx";
 
-export type DrawMode = "draw" | "erase";
-
-function isMode(s: string): s is DrawMode {
-  return s === "draw" || s === "erase";
-}
-
-export type Color = "red" | "blue" | "black";
-
-function isColor(s: string): s is Color {
-  return s === "red" || s === "blue" || s === "black";
-}
-
-export interface Line {
-  mode: DrawMode;
-  color: Color;
-  size: number;
-  points: number[];
-}
-
-export interface Point {
-  x: number;
-  y: number;
-}
+const canvasWidth = 1500;
+const canvasHeight = 1000;
 
 function Whiteboard() {
-  const state = {
-    canvasWidth: 1500,
-    canvasHeight: 1000,
-    image: "",
-  };
-
   const [size, setSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -52,10 +32,20 @@ function Whiteboard() {
   // Object references
   const isDrawing = useRef<boolean>(false);
   const stageRef = useRef<Konva.Stage>(null);
-  const layerRef = useRef<Konva.Layer>(null);
 
-  // Dynamic stage resizing
   useEffect(() => {
+    // Socket initialization
+    socket.emit("get_canvas");
+
+    // Setting stage properties
+    Konva.dragButtons = [2];
+    if (stageRef.current) {
+      // Apply CSS background to stage container
+      const container = stageRef.current.container();
+      container.style.backgroundColor = "gray";
+    }
+
+    // Dynamic stage resizing
     const checkSize = () => {
       setSize({
         width: window.innerWidth,
@@ -72,41 +62,43 @@ function Whiteboard() {
     function onUpdate({
       mode,
       color,
-      size,
+      brush_size,
       points,
     }: {
       mode: string;
       color: string;
-      size: number;
+      brush_size: number;
       points: number[];
     }) {
-      if (!isColor(color) && !isMode(mode)) return;
-
       const line: Line = {
-        mode: mode as DrawMode,
+        draw_mode: mode as DrawMode,
         color: color as Color,
-        size: size,
+        brush_size: brush_size,
         points: points,
       };
 
       setLines([...lines, line]);
     }
-    socket.on("update", onUpdate);
 
+    function onUpdateCanvas(
+      data: {
+        mode: string;
+        color: string;
+        points: number[];
+        brush_size: number;
+      }[],
+    ) {
+      const newLines: Line[] = data.map(toLine);
+      setLines(newLines);
+    }
+
+    socket.on("update", onUpdate);
+    socket.on("update_canvas", onUpdateCanvas);
     return () => {
+      socket.off("update_canvas", onUpdateCanvas);
       socket.off("update", onUpdate);
     };
   }, [lines]);
-
-  // Altering stage
-  useEffect(() => {
-    Konva.dragButtons = [2];
-    if (stageRef.current) {
-      // Apply CSS background to stage container
-      const container = stageRef.current.container();
-      container.style.backgroundColor = "gray";
-    }
-  }, []);
 
   // Navigation and drawing functions
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -116,9 +108,9 @@ function Whiteboard() {
     const pos = e.target.getLayer()?.getRelativePointerPosition();
 
     const line: Line = {
-      mode: mode,
+      draw_mode: mode,
       color: color,
-      size: brushSize,
+      brush_size: brushSize,
       points: [pos!.x, pos!.y],
     };
     setCurrentLine(line);
@@ -129,7 +121,6 @@ function Whiteboard() {
   ) => {
     if (!isDrawing.current) return;
 
-    await new Promise((resolve) => setTimeout(resolve, 15));
     const pos = e.target.getLayer()?.getRelativePointerPosition();
 
     if (currentLine !== undefined) {
@@ -148,15 +139,8 @@ function Whiteboard() {
     isDrawing.current = false;
     if (currentLine === undefined) return;
 
-    const data = {
-      mode: currentLine.mode as string,
-      color: currentLine.color as string,
-      size: currentLine.size,
-      points: currentLine.points,
-    };
-
+    socket.emit("add_line", currentLine);
     setCurrentLine(undefined);
-    socket.emit("add_line", data);
   };
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
@@ -211,48 +195,16 @@ function Whiteboard() {
         onMouseup={handleMouseUp}
       >
         <Layer
-          width={state.canvasWidth}
-          height={state.canvasHeight}
-          ref={layerRef}
-          clipWidth={state.canvasWidth}
-          clipHeight={state.canvasHeight}
+          width={canvasWidth}
+          height={canvasHeight}
+          clipWidth={canvasWidth}
+          clipHeight={canvasHeight}
           onMouseDown={handleMouseDown}
           onMousemove={handleMouseMove}
         >
-          <Rect
-            width={state.canvasWidth}
-            height={state.canvasHeight}
-            fill={"white"}
-          ></Rect>
-          {lines.map((line, i) => (
-            <Line
-              key={i}
-              points={line.points}
-              stroke={line.color}
-              strokeWidth={line.size}
-              tension={0.5}
-              lineCap="round"
-              lineJoin="round"
-              globalCompositeOperation={
-                line.mode === "erase" ? "destination-out" : "source-over"
-              }
-            />
-          ))}
-
-          {currentLine && (
-            <Line
-              key={lines.length}
-              points={currentLine.points}
-              stroke={currentLine.color}
-              strokeWidth={currentLine.size}
-              tension={0.5}
-              lineCap="round"
-              lineJoin="round"
-              globalCompositeOperation={
-                currentLine.mode === "erase" ? "destination-out" : "source-over"
-              }
-            />
-          )}
+          <Rect width={canvasWidth} height={canvasHeight} fill={"white"}></Rect>
+          {lines.map(toKonvaLine)}
+          {currentLine && toKonvaLine(currentLine, lines.length - 1)}
         </Layer>
       </Stage>
     </div>

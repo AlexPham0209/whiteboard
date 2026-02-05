@@ -4,9 +4,9 @@ import { Server } from "socket.io";
 import cors from "cors";
 import { CORS_CONFIG } from "./config.js";
 import pool from "./db/db.js";
-import { addUser } from "./db/users.js";
+import { addUser, userExists } from "./db/users.js";
 import { createRoom, getUserCountInRoom, getUsersInRoom } from "./db/rooms.js";
-import { addLine, type Line } from "./db/lines.js";
+import { addLine, getCanvas, type Line } from "./db/lines.js";
 
 const PORT = process.env.SERVER_PORT;
 
@@ -20,80 +20,53 @@ const io = new Server(server, {
   cors: CORS_CONFIG,
 });
 
-app.get("/", (req, res) => {
-  res.status(200);
-});
-
-app.get("/create", async (req, res) => {
-  let code = await createRoom();
-  res.json(code);
-});
-
-app.get("/add_line", async (req, res) => {
-  const line: Line = {
-    draw_mode: "draw",
-    color: "black",
-    brush_size: 5,
-    points: [5.5, 13.0, 2],
-  };
-  const result = await addLine("gamer", "CQIFB", line);
-  res.json(result);
-});
-
-app.get("/add/:name/:code", async (req, res) => {
-  const username = req.params.name;
-  const code = req.params.code;
-
-  try {
-    let user = await addUser(username, code);
-    res.status(200).json(user);
-  } catch (e) {
-    console.log(e);
-    res.status(400).json(e);
-  }
-});
-
-app.get("/users/:code", async (req, res) => {
-  const code = req.params.code;
-  let users = await getUserCountInRoom(code);
-  res.json(users);
-});
-
-app.get("/lines/:name", async (req, res) => {
-  const username = req.params.name;
-  const result = await pool.query(
-    "SELECT users.username, lines.mode, lines.color, lines.brush_size, lines.points FROM lines JOIN users ON lines.user_id = users.id WHERE users.username = $1 ORDER BY lines.created_at ASC",
-    [username],
-  );
-  res.json(result.rows);
-});
-
-app.get("/api/join", (req, res) => {
-  res.status(200);
-});
-
-app.get("/api/create", (req, res) => {
-  res.status(200);
-});
-
 io.on("connection", (socket) => {
   console.log("A user connected");
 
-  socket.on("join_room", (data) => {
+  socket.on("join_room", async (data, callback) => {
     const { username, room_code } = data;
+    let exist = await userExists(username, room_code);
 
-    socket.data.username = username;
-    socket.data.room_code = room_code;
-    socket.join(room_code);
+    if (exist) {
+      callback({
+        status: "failed",
+        err: "User already exists in room",
+      });
+    }
+
+    try {
+      await addUser(username, room_code);
+      socket.data.username = username;
+      socket.data.room_code = room_code;
+      socket.join(room_code);
+      callback({
+        status: "success",
+      });
+    } catch (e) {
+      callback({
+        status: "failed",
+        err: e,
+      });
+    }
   });
 
   socket.on("leave_room", (data) => {});
 
-  socket.on("add_line", (data) => {
-    io.emit("update", data);
+  socket.on("add_line", async (line: Line) => {
+    if (socket.data.room_code === undefined || socket.data.username === undefined)
+      return;
+    
+    await addLine(socket.data.username, socket.data.room_code, line);
+    io.to(socket.data.room_code).emit("update", line);
   });
 
-  socket.on("get_canvas", async () => {});
+  socket.on("get_canvas", async () => {
+    if (socket.data.room_code === undefined)
+      return;
+
+    const canvas = await getCanvas(socket.data.room_code);
+    socket.emit("update_canvas", canvas);
+  });
 
   socket.on("disconnect", () => {});
 });

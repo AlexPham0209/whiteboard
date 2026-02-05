@@ -12,19 +12,22 @@ export const addUser = async (user: string, room: string) => {
 
     return users.rows;
   } catch (e) {
-    throw "User must not already exist";
+    throw "Room not found";
   }
 };
 
 export const userExists = async (user: string, room: string) => {
   let result = await pool.query(
-    "SELECT * FROM users WHERE username=$1 AND room_code=$2",
+    "SELECT * FROM users JOIN rooms ON room_id = rooms.id WHERE username=$1 AND room_code=$2",
     [user, room],
   );
 
   return result.rowCount !== null && result.rowCount > 0;
 };
 
-export const removeUser = async (user: string) => {
-  await pool.query("DELETE FROM users WHERE username=$1", [user]);
+export const removeUser = async (user: string, room: string) => {
+  await pool.query(
+    "DELETE FROM users USING rooms WHERE users.room_id = rooms.id AND username=$1 AND room_code=$2",
+    [user],
+  );
 };

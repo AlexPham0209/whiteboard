@@ -30,7 +30,7 @@ export const addLine = async (username: string, code: string, line: Line) => {
 export const getCanvas = async (code: string) => {
   try {
     const result = await pool.query(
-      "SELECT users.username, lines.mode, lines.color, lines.brush_size, lines.points FROM lines JOIN rooms ON lines.room_id = rooms.id JOIN users ON lines.user_id = users.id WHERE rooms.room_code = $1 ORDER BY lines.created_at ASC;",
+      "SELECT users.username, lines.mode, lines.color, lines.brush_size, lines.points FROM lines JOIN rooms ON lines.room_id = rooms.id JOIN users ON lines.user_id = users.id WHERE rooms.room_code = $1 ORDER BY lines.created_at ASC",
       [code],
     );
 

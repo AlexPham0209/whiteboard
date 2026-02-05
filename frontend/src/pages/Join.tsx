@@ -1,14 +1,28 @@
 import { useState, type FormEvent } from "react";
+import socket from "../socket";
+import { useNavigate } from "react-router-dom";
 
-export default function Join() {
+export default function Join({
+  setJoined,
+}: {
+  setJoined: React.Dispatch<React.SetStateAction<boolean>>;
+}) {
   const [userName, setUserName] = useState<string>("");
   const [roomCode, setRoomCode] = useState<string>("");
+  const navigate = useNavigate();
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(userName);
-    console.log(roomCode);
-    sessionStorage.setItem("test", "YEAH");
+    socket.emit(
+      "join_room",
+      { username: userName, room_code: roomCode },
+      (response: { status: string; err?: string }) => {
+        if (response.status === "success") {
+          setJoined(true);
+          navigate("/draw");
+        }
+      },
+    );
   };
 
   const onUserNameChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -54,7 +68,4 @@ export default function Join() {
       </form>
     </div>
   );
-}
-function setState<T>(arg0: string): [any, any] {
-  throw new Error("Function not implemented.");
 }
