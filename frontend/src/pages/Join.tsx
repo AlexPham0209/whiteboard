@@ -8,6 +8,7 @@ export default function Join() {
     e.preventDefault();
     console.log(userName);
     console.log(roomCode);
+    sessionStorage.setItem("test", "YEAH");
   };
 
   const onUserNameChange = (e: React.FormEvent<HTMLInputElement>) => {
