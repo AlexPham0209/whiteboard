@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
-import socket from "../socket";
+import { socket, connect } from "../socket";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 export default function Join({
   setJoined,
@@ -9,10 +10,13 @@ export default function Join({
 }) {
   const [userName, setUserName] = useState<string>("");
   const [roomCode, setRoomCode] = useState<string>("");
-  
+
   useEffect(() => {
     const connectError = (err: Error) => {
       console.log(`error due to ${err.message}`);
+      setJoined(false);
+      setUserName("");
+      setRoomCode("");
     };
 
     socket.on("connect_error", connectError);
@@ -23,11 +27,24 @@ export default function Join({
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    socket.auth = {
-      username: userName,
-      room_code: roomCode
-    };
-    socket.connect();
+    axios
+      .post("http://localhost:3000/join", {
+        username: userName,
+        room_code: roomCode,
+        validateStatus: (status) => {
+          return status < 500;
+        },
+      })
+      .then((res) => {
+        sessionStorage.setItem("token", res.data);
+        connect();
+      })
+      .catch((err) => {
+        console.log(err.message);
+        setJoined(false);
+        setUserName("");
+        setRoomCode("");
+      });
   };
 
   const onUserNameChange = (e: React.FormEvent<HTMLInputElement>) => {

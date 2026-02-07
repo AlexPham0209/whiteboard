@@ -1,13 +1,8 @@
 import Konva from "konva";
 import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Text, Transformer, Rect } from "react-konva";
-import socket from "../socket";
-import {
-  toKonvaLine,
-  type Color,
-  type DrawMode,
-  type Line,
-} from "./line.tsx";
+import { socket } from "../socket";
+import { toKonvaLine, type Color, type DrawMode, type Line } from "./line.tsx";
 
 const canvasWidth = 1500;
 const canvasHeight = 1000;

@@ -37,6 +37,15 @@ export const removeUser = async (id: string) => {
   }
 };
 
+export const removeAllUsers = async () => {
+  try {
+    await pool.query("DELETE FROM users", []);
+  } catch (e) {
+    console.log(e);
+    throw new Error("Failed to delete user");
+  }
+};
+
 export const getRoomFromUser = async (id: string) => {
   try {
     await pool.query(

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import socket from "./socket";
+import { socket, connect } from "./socket";
 import axios from "axios";
 import Whiteboard from "./pages/Whiteboard";
 import Join from "./pages/Join";
@@ -21,37 +21,36 @@ function Pages() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = sessionStorage.getItem("token");
-    if (token) {
-      socket.auth = {
-        token: token
-      };
-
-      if (socket.disconnected)
-        socket.connect();
-    }
-
-    const onSession = (token) => {
-      socket.auth = { 
-        token: token 
-      };
-      sessionStorage.setItem("token", token);
+    const onConnect = () => {
+      console.log("On connect");
       setJoined(true);
       navigate("/draw");
-    } 
+    };
 
     const onError = (error: Error) => {
+      console.log(error.message);
+      onDisconnect();
+      
+    };
+
+    const onDisconnect = () => {
+      console.log("disconnect");
       setJoined(false);
       sessionStorage.removeItem("token");
       socket.disconnect();
-    }
+      window.location.reload();
+    };
 
-    socket.on("session", onSession);
+    socket.on("connect", onConnect);
     socket.on("connect_error", onError);
-    return (() => {
-      socket.off("session", onSession);
+    socket.on("disconnect", onDisconnect);
+    connect();
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("disconnect", onDisconnect);
       socket.off("connect_error", onError);
-    });
+    };
   }, []);
 
   return (
