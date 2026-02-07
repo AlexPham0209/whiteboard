@@ -7,7 +7,7 @@ services:
     ports: 
       - 3000:3000
     depends_on:
-      - board-db
+      - db
 
   frontend:
     build: ./frontend
@@ -15,13 +15,14 @@ services:
       - 2094:2094
     depends_on:
       - backend
-    env_file:
-      - ./frontend/.env
-
-  board-db:
+    environment:
+      - NODE_ENV=${NODE_ENV}
+      - VITE_SERVER_PORT=${VITE_SERVER_PORT}
+  
+  db:
     image: postgres:latest
     volumes:
-      - whiteboard-db:/var/lib/postgresql
+      - whiteboard-data:/var/lib/postgresql
       - ./data/schema.sql:/docker-entrypoint-initdb.d/init.sql:ro
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -31,5 +32,5 @@ services:
       - 5432:5432
 
 volumes: 
-  whiteboard-db: 
+  whiteboard-data: 
     

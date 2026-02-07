@@ -9,7 +9,7 @@ import { Server } from "socket.io";
 import cors from "cors";
 import pool from "./db/db.js";
 import { addUser, removeAllUsers, removeUser, userExists } from "./db/users.js";
-import { createRoom, deleteRoom, getUserCountInRoom, getUsersInRoom } from "./db/rooms.js";
+import { createRoom, deleteRoom, getUserCountInRoom, getUsersInRoom, roomExists } from "./db/rooms.js";
 import { addLine, getCanvas, type Line } from "./db/lines.js";
 
 import jwt, { type VerifyErrors } from "jsonwebtoken";
@@ -63,6 +63,10 @@ app.post("/join", async (req, res) => {
   console.log("connect");
   const username = req.body.username;
   const room_code = req.body.room_code;
+
+  const room = await roomExists(room_code);
+  if (!room) throw new Error("Room doesn't exist");
+
   
   const user = await userExists(username, room_code);
   if (user) throw new Error("User already exists in room");
@@ -97,6 +101,9 @@ io.use(async (socket, next) => {
 
   verify(token, SECRET!, async (err: VerifyErrors | null, decoded: any) => {
     if (err) return next(new Error("Authentication Error"));
+    
+    const room = await roomExists(decoded.data.room_code);
+    if (!room) throw new Error("Room doesn't exist");
 
     const user = await userExists(
       decoded.data.username,
@@ -117,7 +124,11 @@ io.on("connection", async (socket) => {
     socket.data.room_code,
   ).catch((e) => {
     socket.disconnect(true);
+    return undefined;
   });
+  
+  if (data === undefined)
+    return;
 
   socket.data.user_id = data.id;
 
