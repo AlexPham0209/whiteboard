@@ -1,4 +1,4 @@
-import express from "express";
+import express, { type Request, type Response, type Express, type NextFunction } from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
@@ -24,44 +24,77 @@ const io = new Server(server, {
   cors: CORS_CONFIG,
 });
 
-// app.post("/create", (req, res) => {
+app.post("/create", (req, res) => {
 
-// });
+});
+
+app.post("/join", async (req, res) => {
+  const username = req.body.username;
+  const room_code = req.body.room_code;
+
+  try {
+    const user = await userExists(username, room_code);
+    
+    if (user)
+      throw new Error("User already exists in the room");
+  
+  } catch(e) {
+    throw new Error("User check failed");
+  }
+
+  const data = {
+    username: username,
+    room_code: room_code
+  }
+
+  const token = sign({
+    data: data,
+  },
+    SECRET!,
+  {
+    expiresIn: "1h",
+  });
+
+  res.status(201).json(token);
+});
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack)
+  res.status(500).json({
+    status: err.message,
+    err: err.message
+  });
+})
+
 
 io.use(async (socket, next) => {
   const token = socket.handshake.auth.token;
-  
-  if (token) {
-    try {
-      const decoded = verify(token, SECRET!);
 
-      if (typeof decoded === 'string')
-        return new Error("Invalid decoded output");
-      
+  if (token) {
+    const decoded = verify(token, SECRET!, async (err, decoded) => {
+      if (err) return next(new Error("Authentication Error"));
+        
       const user = await userExists(decoded.data.username, decoded.data.room_code);
       if (user) 
         return new Error("User exists");
-
+      
       socket.data.username = decoded.data.username;
       socket.data.room_code = decoded.data.room_code;
       socket.join(decoded.data.room_code);
-      return next();
+      next();
+    });
+  } else {
+    const username = socket.handshake.auth.username;
+    const room_code = socket.handshake.auth.room_code;
+    const user = await userExists(username, room_code);
+    if (user)
+      return next(new Error("User already exists"));
 
-    } catch (e) {
-      return next(new Error("Unable to refresh"));
-    }
+    socket.data.username = username;
+    socket.data.room_code = room_code;
+    socket.join(room_code);
+    next();
   }
-
-  const username = socket.handshake.auth.username;
-  const room_code = socket.handshake.auth.room_code;
-  const user = await userExists(username, room_code);
-  if (user)
-    return next(new Error("User already exists"));
-
-  socket.data.username = username;
-  socket.data.room_code = room_code;
-  socket.join(room_code);
-  next();
 });
 
 io.on("connection", async (socket) => {

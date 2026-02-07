@@ -19,7 +19,6 @@ export default function Join({
     return () => {
       socket.off("update_canvas", connectError);
     };
-
   }, []);
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
