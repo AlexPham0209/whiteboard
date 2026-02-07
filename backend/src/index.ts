@@ -30,18 +30,20 @@ const io = new Server(server, {
   cors: CORS_CONFIG,
 });
 
-app.post("/create", (req, res) => {});
+// Disconnect all previous users
+removeAllUsers();
+
+app.post("/create", (req, res) => {
+
+
+});
 
 app.post("/join", async (req, res) => {
   const username = req.body.username;
   const room_code = req.body.room_code;
-  try {
-    const user = await userExists(username, room_code);
-    
-    if (user) throw new Error("User already exists in the room");
-  } catch (e) {
-    throw new Error("User already exists in the room");
-  }
+  
+  const user = await userExists(username, room_code);
+  if (user) throw new Error("User already exists in room");
 
   const data = {
     username: username,
@@ -78,7 +80,7 @@ io.use(async (socket, next) => {
       decoded.data.username,
       decoded.data.room_code,
     );
-    if (user) return new Error("User exists");
+    if (user) return new Error("User already exists");
 
     socket.data.username = decoded.data.username;
     socket.data.room_code = decoded.data.room_code;

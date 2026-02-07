@@ -24,7 +24,7 @@ export const userExists = async (user: string, room: string) => {
     return result.rowCount !== null && result.rowCount > 0;
   } catch (e) {
     console.log(e);
-    return new Error("Failed to check if user existed");
+    return false;
   }
 };
 
