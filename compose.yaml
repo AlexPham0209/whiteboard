@@ -10,14 +10,16 @@ services:
       - db
 
   frontend:
-    build: ./frontend
+    build: 
+      context: ./frontend
+      args:
+        - NODE_ENV=${NODE_ENV}
+        - VITE_SERVER_PORT=${VITE_SERVER_PORT}
     ports: 
       - 2094:2094
     depends_on:
       - backend
-    environment:
-      - NODE_ENV=${NODE_ENV}
-      - VITE_SERVER_PORT=${VITE_SERVER_PORT}
+
   
   db:
     image: postgres:latest

@@ -39,7 +39,7 @@ export default function Join({
         connect();
       })
       .catch((err) => {
-        console.log(err.message);
+        console.log(err.response.data.message);
         setJoined(false);
         setUserName("");
         setRoomCode("");
