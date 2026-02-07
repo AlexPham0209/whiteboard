@@ -1,6 +1,5 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { socket, connect } from "../socket";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 export default function Join({
@@ -31,7 +30,7 @@ export default function Join({
       .post("http://localhost:3000/join", {
         username: userName,
         room_code: roomCode,
-        validateStatus: (status) => {
+        validateStatus: (status: number) => {
           return status < 500;
         },
       })

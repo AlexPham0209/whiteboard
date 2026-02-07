@@ -1,6 +1,6 @@
 import Konva from "konva";
 import { useEffect, useRef, useState } from "react";
-import { Stage, Layer, Text, Transformer, Rect } from "react-konva";
+import { Stage, Layer, Rect } from "react-konva";
 import { socket } from "../socket";
 import { toKonvaLine, type Color, type DrawMode, type Line } from "./line.tsx";
 
@@ -17,9 +17,9 @@ function Whiteboard() {
   const stageHeight = size.height;
 
   //Brush settings
-  const [mode, setMode] = useState<DrawMode>("draw");
-  const [color, setColor] = useState<Color>("black");
-  const [brushSize, setBrushSize] = useState<number>(5);
+  const [mode, ] = useState<DrawMode>("draw");
+  const [color, ] = useState<Color>("black");
+  const [brushSize, ] = useState<number>(5);
   const [lines, setLines] = useState<Line[]>([]);
   const [currentLine, setCurrentLine] = useState<Line>();
 

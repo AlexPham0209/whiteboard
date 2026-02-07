@@ -24,7 +24,7 @@ export const createRoom = async () => {
       });
   }
 
-  return result.rows;
+  return result.rows[0];
 };
 
 export const roomExists = async (code: string) => {

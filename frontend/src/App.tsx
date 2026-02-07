@@ -1,14 +1,11 @@
 import { useEffect, useState } from "react";
 import { socket, connect } from "./socket";
-import axios from "axios";
 import Whiteboard from "./pages/Whiteboard";
 import Join from "./pages/Join";
 import {
   BrowserRouter,
-  HashRouter,
   Navigate,
   Route,
-  Router,
   Routes,
   useLocation,
   useNavigate,
@@ -22,19 +19,18 @@ function Pages() {
 
   useEffect(() => {
     const onConnect = () => {
-      console.log("On connect");
+      console.log("connected");
       setJoined(true);
       navigate("/draw");
     };
 
     const onError = (error: Error) => {
       console.log(error.message);
-      onDisconnect();
-      
+      setJoined(false);
+      sessionStorage.removeItem("token");
     };
 
     const onDisconnect = () => {
-      console.log("disconnect");
       setJoined(false);
       sessionStorage.removeItem("token");
       socket.disconnect();
@@ -57,7 +53,7 @@ function Pages() {
     <Routes location={location} key={location.pathname}>
       <Route path="*" element={<Navigate to={joined ? "/draw" : "/join"} />} />
       <Route path="/join" element={<Join setJoined={setJoined} />} />
-      <Route path="/create" element={<Create />} />
+      <Route path="/create" element={<Create setJoined={setJoined} />} />
       <Route
         path="/draw"
         element={joined ? <Whiteboard /> : <Navigate to="/join" />}

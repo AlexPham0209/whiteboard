@@ -1,4 +1,4 @@
-import { Stage, Layer, Line, Text, Transformer, Rect } from "react-konva";
+import { Line } from "react-konva";
 
 export type DrawMode = "draw" | "erase";
 export type Color = "red" | "blue" | "black";

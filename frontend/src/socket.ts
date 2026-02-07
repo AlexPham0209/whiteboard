@@ -1,8 +1,9 @@
 import { io } from "socket.io-client";
 
-const PORT = import.meta.env.VITE_SERVER_PORT;
-const URL = import.meta.env.PROD ? undefined : `http://localhost:${PORT}`;
-export const socket = io(URL, { autoConnect: false });
+// const PORT = import.meta.env.VITE_SERVER_PORT;
+// const URL = import.meta.env.PROD ? undefined : `http://localhost:${PORT}`;
+const URL = 'http://localhost:3000';
+export const socket = io(URL,  { autoConnect: false });
 
 export const connect = () => {
   const token = sessionStorage.getItem("token");

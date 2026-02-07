@@ -7,10 +7,9 @@ import express, {
 import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
-import { CORS_CONFIG } from "./config.js";
 import pool from "./db/db.js";
 import { addUser, removeAllUsers, removeUser, userExists } from "./db/users.js";
-import { createRoom, getUserCountInRoom, getUsersInRoom } from "./db/rooms.js";
+import { createRoom, deleteRoom, getUserCountInRoom, getUsersInRoom } from "./db/rooms.js";
 import { addLine, getCanvas, type Line } from "./db/lines.js";
 
 import jwt, { type VerifyErrors } from "jsonwebtoken";
@@ -18,6 +17,9 @@ const { sign, verify } = jwt;
 
 const PORT = process.env.SERVER_PORT;
 const SECRET = process.env.SECRET;
+const CORS_CONFIG = {
+  origin: process.env.CORS_ORIGINS
+};
 
 // Setting up Express App
 const app = express();
@@ -33,12 +35,32 @@ const io = new Server(server, {
 // Disconnect all previous users
 removeAllUsers();
 
-app.post("/create", (req, res) => {
+app.post("/create", async (req, res) => {
+  const username = req.body.username;
+  
+  const { room_code } = await createRoom();
 
+  const data = {
+    username: username,
+    room_code: room_code,
+  };
 
+  const token = sign(
+    {
+      data: data,
+    },
+    SECRET!,
+    {
+      expiresIn: "1h",
+    },
+  );
+
+  console.log(room_code);
+  res.status(201).json(token);
 });
 
 app.post("/join", async (req, res) => {
+  console.log("connect");
   const username = req.body.username;
   const room_code = req.body.room_code;
   
@@ -90,14 +112,14 @@ io.use(async (socket, next) => {
 });
 
 io.on("connection", async (socket) => {
-  const { id } = await addUser(
+  const data = await addUser(
     socket.data.username,
     socket.data.room_code,
   ).catch((e) => {
     socket.disconnect(true);
   });
 
-  socket.data.user_id = id;
+  socket.data.user_id = data.id;
 
   socket.on("add_line", async (line: Line) => {
     await addLine(socket.data.user_id, line);
@@ -113,6 +135,10 @@ io.on("connection", async (socket) => {
 
   socket.on("disconnect", async () => {
     await removeUser(socket.data.user_id);
+
+    const count = await getUserCountInRoom(socket.data.room_code);
+    if (count === 0)
+      await deleteRoom(socket.data.room_code);
   });
 });
 

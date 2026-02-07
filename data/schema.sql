@@ -1,4 +1,4 @@
-CREATE DATABASE whiteboard;
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TYPE draw_mode AS ENUM ('draw', 'erase');
 CREATE TYPE pen_color AS ENUM ('black', 'red', 'blue');
 
@@ -15,7 +15,7 @@ CREATE TABLE users (
     username VARCHAR(255) NOT NULL,
     room_id uuid NOT NULL,
     joined_at TIMESTAMP NOT NULL DEFAULT NOW(),
-
+    
     CONSTRAINT fk_room 
         FOREIGN KEY (room_id) REFERENCES rooms(id)
         ON DELETE CASCADE,
