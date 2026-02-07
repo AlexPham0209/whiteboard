@@ -4,7 +4,6 @@ import { Stage, Layer, Text, Transformer, Rect } from "react-konva";
 import socket from "../socket";
 import {
   toKonvaLine,
-  toLine,
   type Color,
   type DrawMode,
   type Line,
@@ -34,7 +33,8 @@ function Whiteboard() {
   const stageRef = useRef<Konva.Stage>(null);
 
   useEffect(() => {
-    // Socket initialization
+    // Canvas initialization
+    // Retrieve all drawn lines by users from the backend
     socket.emit("get_canvas");
 
     // Setting stage properties
@@ -59,38 +59,13 @@ function Whiteboard() {
 
   // Socket.io events
   useEffect(() => {
-    function onUpdate({
-      mode,
-      color,
-      brush_size,
-      points,
-    }: {
-      mode: string;
-      color: string;
-      brush_size: number;
-      points: number[];
-    }) {
-      const line: Line = {
-        draw_mode: mode as DrawMode,
-        color: color as Color,
-        brush_size: brush_size,
-        points: points,
-      };
-
+    const onUpdate = (line: Line) => {
       setLines([...lines, line]);
-    }
+    };
 
-    function onUpdateCanvas(
-      data: {
-        mode: string;
-        color: string;
-        points: number[];
-        brush_size: number;
-      }[],
-    ) {
-      const newLines: Line[] = data.map(toLine);
-      setLines(newLines);
-    }
+    const onUpdateCanvas = (data: Line[]) => {
+      setLines(data);
+    };
 
     socket.on("update", onUpdate);
     socket.on("update_canvas", onUpdateCanvas);
@@ -133,13 +108,12 @@ function Whiteboard() {
     }
   };
 
-  const handleMouseUp = (
-    e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
-  ) => {
+  const handleMouseUp = () => {
     isDrawing.current = false;
     if (currentLine === undefined) return;
 
     socket.emit("add_line", currentLine);
+    setLines([...lines, currentLine]);
     setCurrentLine(undefined);
   };
 
@@ -178,7 +152,7 @@ function Whiteboard() {
       x: pointer.x - mousePointTo.x * newScale,
       y: pointer.y - mousePointTo.y * newScale,
     };
-    stage!.position(newPos);
+    stage.position(newPos);
   };
 
   return (

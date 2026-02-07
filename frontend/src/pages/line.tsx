@@ -10,20 +10,6 @@ export interface Line {
   points: number[];
 }
 
-export const toLine = (data: {
-  mode: string;
-  color: string;
-  points: number[];
-  brush_size: number;
-}) => {
-  return {
-    draw_mode: data.mode as DrawMode,
-    color: data.color as Color,
-    brush_size: data.brush_size,
-    points: data.points,
-  };
-};
-
 export const toKonvaLine = (line: Line, i: number) => {
   return (
     <Line

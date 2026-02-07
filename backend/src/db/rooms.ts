@@ -38,6 +38,10 @@ export const deleteRoom = async (code: string) => {
   await pool.query("DELETE FROM rooms WHERE room_code=$1", [code]);
 };
 
+export const deleteAllRooms = async (code: string) => {
+  await pool.query("DELETE FROM rooms", [code]);
+};
+
 export const getUsersInRoom = async (code: string) => {
   const result = await pool.query(
     "SELECT username, joined_at FROM users JOIN rooms ON users.room_id = rooms.id WHERE rooms.room_code = $1 ORDER BY joined_at ASC",

@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import socket from "../socket";
 import { useNavigate } from "react-router-dom";
 
@@ -9,20 +9,26 @@ export default function Join({
 }) {
   const [userName, setUserName] = useState<string>("");
   const [roomCode, setRoomCode] = useState<string>("");
-  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const connectError = (err: Error) => {
+      console.log(`error due to ${err.message}`);
+    };
+
+    socket.on("connect_error", connectError);
+    return () => {
+      socket.off("update_canvas", connectError);
+    };
+
+  }, []);
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    socket.emit(
-      "join_room",
-      { username: userName, room_code: roomCode },
-      (response: { status: string; err?: string }) => {
-        if (response.status === "success") {
-          setJoined(true);
-          navigate("/draw");
-        }
-      },
-    );
+    socket.auth = {
+      username: userName,
+      room_code: roomCode
+    };
+    socket.connect();
   };
 
   const onUserNameChange = (e: React.FormEvent<HTMLInputElement>) => {
