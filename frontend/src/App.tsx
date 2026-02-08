@@ -19,7 +19,6 @@ function Pages() {
 
   useEffect(() => {
     const onConnect = () => {
-      console.log("connected");
       setJoined(true);
       navigate("/draw");
     };
@@ -47,7 +46,7 @@ function Pages() {
       socket.off("disconnect", onDisconnect);
       socket.off("connect_error", onError);
     };
-  }, []);
+  }, [navigate]);
 
   return (
     <Routes location={location} key={location.pathname}>

@@ -55,12 +55,10 @@ app.post("/create", async (req, res) => {
     },
   );
 
-  console.log(room_code);
   res.status(201).json(token);
 });
 
 app.post("/join", async (req, res) => {
-  console.log("connect");
   const username = req.body.username;
   const room_code = req.body.room_code;
 
@@ -102,23 +100,25 @@ io.use(async (socket, next) => {
   verify(token, SECRET!, async (err: VerifyErrors | null, decoded: any) => {
     if (err) return next(new Error("Authentication Error"));
     
+    // Check if rooms exists before joining
     const room = await roomExists(decoded.data.room_code);
-    if (!room) throw new Error("Room doesn't exist");
+    if (!room) return next(new Error("Room doesn't exist"));
 
+    // Check if there are no users with the same name
     const user = await userExists(
       decoded.data.username,
       decoded.data.room_code,
     );
-    if (user) return new Error("User already exists");
-
+    if (user) return next(new Error("User already exist"));
+      
     socket.data.username = decoded.data.username;
     socket.data.room_code = decoded.data.room_code;
-    socket.join(decoded.data.room_code);
     next();
   });
 });
 
 io.on("connection", async (socket) => {
+  // On connection, add newly connected user to users table
   const data = await addUser(
     socket.data.username,
     socket.data.room_code,
@@ -126,11 +126,12 @@ io.on("connection", async (socket) => {
     socket.disconnect(true);
     return undefined;
   });
-  
+
   if (data === undefined)
     return;
-
+  
   socket.data.user_id = data.id;
+  socket.join(socket.data.room_code);
 
   socket.on("add_line", async (line: Line) => {
     await addLine(socket.data.user_id, line);
