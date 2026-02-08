@@ -5,7 +5,7 @@ export const addUser = async (user: string, room: string) => {
 
   try {
     let users = await pool.query(
-      "INSERT INTO users (username, room_id) SELECT $1, id FROM rooms WHERE room_code=$2 RETURNING id",
+      "INSERT INTO users (username, room_id) SELECT $1, id FROM rooms WHERE room_code=$2 RETURNING id, username, joined_at",
       [user, room],
     );
     return users.rows[0];

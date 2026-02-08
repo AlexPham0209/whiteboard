@@ -23,6 +23,7 @@ function Whiteboard() {
   const [lines, setLines] = useState<Line[]>([]);
   const [currentLine, setCurrentLine] = useState<Line>();
   const [roomCode, setRoomCode] = useState<string>("ABCDE");
+  const [users, setUsers] = useState<{username: string, joined_at: string}[]>([]);
 
   // Object references
   const isDrawing = useRef<boolean>(false);
@@ -33,6 +34,7 @@ function Whiteboard() {
     // Retrieve all drawn lines by users from the backend
     socket.emit("get_canvas");
     socket.emit("get_code");
+    socket.emit("get_users");
 
     // Setting stage properties
     Konva.dragButtons = [2];
@@ -68,13 +70,20 @@ function Whiteboard() {
       setRoomCode(code);
     };
 
+    const onUpdateUsers = (users: {username: string, joined_at: string}[]) => {
+      setUsers(users);
+    };
+
     socket.on("update", onUpdate);
     socket.on("update_canvas", onUpdateCanvas);
     socket.on("update_code", onUpdateCode);
+    socket.on("update_users", onUpdateUsers);
+
     return () => {
       socket.off("update_canvas", onUpdateCanvas);
       socket.off("update", onUpdate);
       socket.off("update_code", onUpdateCode);
+      socket.off("update_users", onUpdateUsers);
     };
   }, [lines]);
 
@@ -161,6 +170,14 @@ function Whiteboard() {
   return (
     <div className="w-full h-full flex justify-center">
       <div className="absolute m-auto mt-10 z-10 text-2xl font-bold text-black">{roomCode}</div>
+      <div className="absolute flex flex-col right-10 t-0 m-10 z-10 text-2xl font-bold text-black">
+        {users.map((user) => {
+          return (
+          <div className="font-bold text-black">
+            {user.username}
+          </div>);
+        })}
+      </div>
       <Stage
         ref={stageRef}
         width={stageWidth}

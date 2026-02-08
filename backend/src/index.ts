@@ -133,6 +133,9 @@ io.on("connection", async (socket) => {
   socket.data.user_id = data.id;
   socket.join(socket.data.room_code);
 
+  const users = await getUsersInRoom(socket.data.room_code);
+  socket.broadcast.to(socket.data.room_code).emit("update_users", users);
+  
   socket.on("add_line", async (line: Line) => {
     await addLine(socket.data.user_id, line);
     socket.broadcast.to(socket.data.room_code).emit("update", line);
@@ -152,12 +155,19 @@ io.on("connection", async (socket) => {
     socket.emit("update_code", socket.data.room_code);
   });
 
+  socket.on("get_users", async () => {
+    const users = await getUsersInRoom(socket.data.room_code);
+    socket.emit("update_users", users);
+  });
+
   socket.on("disconnect", async () => {
     await removeUser(socket.data.user_id);
 
-    const count = await getUserCountInRoom(socket.data.room_code);
-    if (count === 0)
+    const users = await getUsersInRoom(socket.data.room_code);
+    if (users.length === 0)
       await deleteRoom(socket.data.room_code);
+    else
+      socket.broadcast.to(socket.data.room_code).emit("update_users", users);
   });
 });
 
