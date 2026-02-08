@@ -22,6 +22,7 @@ function Whiteboard() {
   const [brushSize, ] = useState<number>(5);
   const [lines, setLines] = useState<Line[]>([]);
   const [currentLine, setCurrentLine] = useState<Line>();
+  const [roomCode, setRoomCode] = useState<string>("ABCDE");
 
   // Object references
   const isDrawing = useRef<boolean>(false);
@@ -31,6 +32,7 @@ function Whiteboard() {
     // Canvas initialization
     // Retrieve all drawn lines by users from the backend
     socket.emit("get_canvas");
+    socket.emit("get_code");
 
     // Setting stage properties
     Konva.dragButtons = [2];
@@ -62,11 +64,17 @@ function Whiteboard() {
       setLines(data);
     };
 
+    const onUpdateCode = (code: string) => {
+      setRoomCode(code);
+    };
+
     socket.on("update", onUpdate);
     socket.on("update_canvas", onUpdateCanvas);
+    socket.on("update_code", onUpdateCode);
     return () => {
       socket.off("update_canvas", onUpdateCanvas);
       socket.off("update", onUpdate);
+      socket.off("update_code", onUpdateCode);
     };
   }, [lines]);
 
@@ -152,6 +160,7 @@ function Whiteboard() {
 
   return (
     <div className="w-full h-full flex justify-center">
+      <div className="absolute m-auto mt-10 z-10 text-2xl font-bold text-black">{roomCode}</div>
       <Stage
         ref={stageRef}
         width={stageWidth}

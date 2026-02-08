@@ -145,6 +145,13 @@ io.on("connection", async (socket) => {
     socket.emit("update_canvas", canvas);
   });
 
+  socket.on("get_code", () => {
+    if (socket.data.room_code === undefined)
+      return;
+    
+    socket.emit("update_code", socket.data.room_code);
+  });
+
   socket.on("disconnect", async () => {
     await removeUser(socket.data.user_id);
 
