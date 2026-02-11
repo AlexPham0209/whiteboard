@@ -65,7 +65,6 @@ app.post("/join", async (req, res) => {
   const room = await roomExists(room_code);
   if (!room) throw new Error("Room doesn't exist");
 
-  
   const user = await userExists(username, room_code);
   if (user) throw new Error("User already exists in room");
 
@@ -163,11 +162,14 @@ io.on("connection", async (socket) => {
   socket.on("disconnect", async () => {
     await removeUser(socket.data.user_id);
 
-    const users = await getUsersInRoom(socket.data.room_code);
-    if (users.length === 0)
-      await deleteRoom(socket.data.room_code);
-    else
-      socket.broadcast.to(socket.data.room_code).emit("update_users", users);
+    // Delete if there are no new users after 5 seconds
+    await setTimeout(async () => {
+      const users = await getUsersInRoom(socket.data.room_code);
+      if (users.length === 0)
+        await deleteRoom(socket.data.room_code);
+      else
+        socket.broadcast.to(socket.data.room_code).emit("update_users", users);
+    }, 5000);
   });
 });
 

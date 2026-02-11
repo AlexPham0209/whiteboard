@@ -28,18 +28,32 @@ export const createRoom = async () => {
 };
 
 export const roomExists = async (code: string) => {
-  const result = await pool.query("SELECT * FROM rooms WHERE room_code=$1", [
-    code,
-  ]);
-  return result.rowCount !== null && result.rowCount > 0;
+  try {
+    const result = await pool.query("SELECT * FROM rooms WHERE room_code=$1", [
+      code,
+    ]);
+
+    return result.rowCount !== null && result.rowCount > 0;
+  } catch (e) {
+    return false;
+  }
+  
 };
 
 export const deleteRoom = async (code: string) => {
-  await pool.query("DELETE FROM rooms WHERE room_code=$1", [code]);
+  try {
+    await pool.query("DELETE FROM rooms WHERE room_code=$1", [code]);
+  } catch(e) {
+    throw new Error("Unable to delete room");
+  }
 };
 
 export const deleteAllRooms = async (code: string) => {
-  await pool.query("DELETE FROM rooms", [code]);
+  try {
+    await pool.query("DELETE FROM rooms", [code]);
+  } catch(e) {
+    throw new Error("Unable to all rooms");
+  }
 };
 
 export const getUsersInRoom = async (code: string) => {

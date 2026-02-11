@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { socket, connect } from "../socket";
 import axios from "axios";
 
+
 export default function Join({
   setJoined,
 }: {
