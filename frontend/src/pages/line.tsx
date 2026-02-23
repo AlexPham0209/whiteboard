@@ -15,14 +15,12 @@ export const toKonvaLine = (line: Line, i: number) => {
     <Line
       key={i}
       points={line.points}
-      stroke={line.draw_mode === "erase" ? line.color : "white"}
+      stroke={line.draw_mode !== "erase" ? line.color : "white"}
       strokeWidth={line.brush_size}
       tension={0.5}
       lineCap="round"
       lineJoin="round"
-      globalCompositeOperation={
-        "source-over"
-      }
+      globalCompositeOperation={"source-over"}
     />
   );
 };

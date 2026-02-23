@@ -9,7 +9,13 @@ import { Server } from "socket.io";
 import cors from "cors";
 import pool from "./db/db.js";
 import { addUser, removeAllUsers, removeUser, userExists } from "./db/users.js";
-import { createRoom, deleteRoom, getUserCountInRoom, getUsersInRoom, roomExists } from "./db/rooms.js";
+import {
+  createRoom,
+  deleteRoom,
+  getUserCountInRoom,
+  getUsersInRoom,
+  roomExists,
+} from "./db/rooms.js";
 import { addLine, getCanvas, type Line } from "./db/lines.js";
 
 import jwt, { type VerifyErrors } from "jsonwebtoken";
@@ -18,7 +24,7 @@ const { sign, verify } = jwt;
 const PORT = process.env.SERVER_PORT;
 const SECRET = process.env.SECRET;
 const CORS_CONFIG = {
-  origin: process.env.CORS_ORIGINS
+  origin: process.env.CORS_ORIGINS,
 };
 
 // Setting up Express App
@@ -37,7 +43,7 @@ removeAllUsers();
 
 app.post("/create", async (req, res) => {
   const username = req.body.username;
-  
+
   const { room_code } = await createRoom();
 
   const data = {
@@ -98,7 +104,7 @@ io.use(async (socket, next) => {
 
   verify(token, SECRET!, async (err: VerifyErrors | null, decoded: any) => {
     if (err) return next(new Error("Authentication Error"));
-    
+
     // Check if rooms exists before joining
     const room = await roomExists(decoded.data.room_code);
     if (!room) return next(new Error("Room doesn't exist"));
@@ -109,7 +115,7 @@ io.use(async (socket, next) => {
       decoded.data.room_code,
     );
     if (user) return next(new Error("User already exist"));
-      
+
     socket.data.username = decoded.data.username;
     socket.data.room_code = decoded.data.room_code;
     next();
@@ -118,23 +124,21 @@ io.use(async (socket, next) => {
 
 io.on("connection", async (socket) => {
   // On connection, add newly connected user to users table
-  const data = await addUser(
-    socket.data.username,
-    socket.data.room_code,
-  ).catch((e) => {
-    socket.disconnect(true);
-    return undefined;
-  });
+  const data = await addUser(socket.data.username, socket.data.room_code).catch(
+    (e) => {
+      socket.disconnect(true);
+      return undefined;
+    },
+  );
 
-  if (data === undefined)
-    return;
-  
+  if (data === undefined) return;
+
   socket.data.user_id = data.id;
   socket.join(socket.data.room_code);
 
   const users = await getUsersInRoom(socket.data.room_code);
   socket.broadcast.to(socket.data.room_code).emit("update_users", users);
-  
+
   socket.on("add_line", async (line: Line) => {
     await addLine(socket.data.user_id, line);
     socket.broadcast.to(socket.data.room_code).emit("update", line);
@@ -148,9 +152,8 @@ io.on("connection", async (socket) => {
   });
 
   socket.on("get_code", () => {
-    if (socket.data.room_code === undefined)
-      return;
-    
+    if (socket.data.room_code === undefined) return;
+
     socket.emit("update_code", socket.data.room_code);
   });
 
@@ -165,8 +168,7 @@ io.on("connection", async (socket) => {
     // Delete if there are no new users after 5 seconds
     await setTimeout(async () => {
       const users = await getUsersInRoom(socket.data.room_code);
-      if (users.length === 0)
-        await deleteRoom(socket.data.room_code);
+      if (users.length === 0) await deleteRoom(socket.data.room_code);
       else
         socket.broadcast.to(socket.data.room_code).emit("update_users", users);
     }, 5000);

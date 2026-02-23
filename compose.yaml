@@ -4,18 +4,18 @@ services:
     build: ./backend
     env_file:
       - ./backend/.env
-    ports: 
+    ports:
       - 3000:3000
     depends_on:
       - db
 
   frontend:
-    build: 
+    build:
       context: ./frontend
       args:
         - NODE_ENV=${NODE_ENV}
         - VITE_SERVER_PORT=${VITE_SERVER_PORT}
-    ports: 
+    ports:
       - 2094:2094
     depends_on:
       - backend
@@ -32,6 +32,5 @@ services:
     ports:
       - 5432:5432
 
-volumes: 
-  whiteboard-data: 
-    
+volumes:
+  whiteboard-data:

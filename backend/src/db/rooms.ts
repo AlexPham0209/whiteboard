@@ -37,13 +37,12 @@ export const roomExists = async (code: string) => {
   } catch (e) {
     return false;
   }
-  
 };
 
 export const deleteRoom = async (code: string) => {
   try {
     await pool.query("DELETE FROM rooms WHERE room_code=$1", [code]);
-  } catch(e) {
+  } catch (e) {
     throw new Error("Unable to delete room");
   }
 };
@@ -51,7 +50,7 @@ export const deleteRoom = async (code: string) => {
 export const deleteAllRooms = async (code: string) => {
   try {
     await pool.query("DELETE FROM rooms", [code]);
-  } catch(e) {
+  } catch (e) {
     throw new Error("Unable to all rooms");
   }
 };

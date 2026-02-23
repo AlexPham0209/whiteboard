@@ -1,8 +1,12 @@
 import Konva from "konva";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type SetStateAction } from "react";
 import { Stage, Layer, Rect } from "react-konva";
 import { socket } from "../socket";
 import { toKonvaLine, type Color, type DrawMode, type Line } from "./line.tsx";
+import { ColorSelector } from "./ColorSelector.tsx";
+import Slider from "@mui/material/Slider";
+import ToggleButton from "@mui/material/ToggleButton";
+import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 
 const canvasWidth = 1500;
 const canvasHeight = 1000;
@@ -18,12 +22,14 @@ function Whiteboard() {
 
   //Brush settings
   const [mode, setMode] = useState<DrawMode>("draw");
-  const [color, ] = useState<Color>("black");
-  const [brushSize, ] = useState<number>(5);
+  const [color, setColor] = useState<Color>("black");
+  const [brushSize, setBrushSize] = useState<number>(5);
   const [lines, setLines] = useState<Line[]>([]);
   const [currentLine, setCurrentLine] = useState<Line>();
   const [roomCode, setRoomCode] = useState<string>("ABCDE");
-  const [users, setUsers] = useState<{username: string, joined_at: string}[]>([]);
+  const [users, setUsers] = useState<{ username: string; joined_at: string }[]>(
+    [],
+  );
 
   // Object references
   const isDrawing = useRef<boolean>(false);
@@ -70,7 +76,9 @@ function Whiteboard() {
       setRoomCode(code);
     };
 
-    const onUpdateUsers = (users: {username: string, joined_at: string}[]) => {
+    const onUpdateUsers = (
+      users: { username: string; joined_at: string }[],
+    ) => {
       setUsers(users);
     };
 
@@ -169,26 +177,83 @@ function Whiteboard() {
 
   return (
     <div className="w-full h-full flex justify-center">
-      <div className="absolute m-auto mt-10 z-10 text-2xl font-bold text-black">{roomCode}</div>
-      <div className="absolute flex flex-row z-11 bottom-10 w-1/2 text-2xl rounded-4xl font-bold bg-gray-800 shadow-2xl p-5">
-        <button className="text-white" onClick={() => {
-          switch (mode) {
-            case "draw":
-              setMode("erase");
-              break;
+      <div className="absolute m-auto mt-10 z-10 text-3xl font-bold text-white drop-shadow-[0_2.2px_1.2px_rgba(0,0,0,0.8)]">
+        {roomCode}
+      </div>
+      <div className="absolute flex flex-col z-11 justify-between items-center bottom-10 w-1/3 h-35 text-2xl rounded-4xl font-bold bg-gray-900 shadow-2xl p-5">
+        <div className="flex flex-row justify-center items-center gap-10">
+          <ToggleButtonGroup
+            color="success"
+            orientation="horizontal"
+            value={mode}
+            exclusive
+            onChange={(
+              event: React.MouseEvent<HTMLElement>,
+              nextView: DrawMode,
+            ) => {
+              if (nextView !== null) setMode(nextView);
+            }}
+          >
+            <ToggleButton
+              value="draw"
+              aria-label="draw"
+              sx={{
+                "&.Mui-selected, &.Mui-selected:hover": {
+                  color: "white",
+                  backgroundColor: "white", // Your custom color
+                },
+              }}
+            >
+              <img
+                className={mode === "draw" ? "w-10 h-10" : "w-10 h-10 invert"}
+                src="brush.png"
+              />
+            </ToggleButton>
 
-            case "erase":
-              setMode("draw");
-              break;
-          }
-        }}>{mode}</button>
+            <ToggleButton
+              value="erase"
+              aria-label="erase"
+              sx={{
+                "&.Mui-selected, &.Mui-selected:hover": {
+                  color: "white",
+                  backgroundColor: "white", // Your custom color
+                },
+              }}
+            >
+              <img
+                className={mode === "erase" ? "w-10 h-10" : "w-10 h-10 invert"}
+                src="erase.png"
+              />
+            </ToggleButton>
+          </ToggleButtonGroup>
+          <ColorSelector color={"red"} selected={color} setColor={setColor} />
+          <ColorSelector color={"black"} selected={color} setColor={setColor} />
+          <ColorSelector color={"blue"} selected={color} setColor={setColor} />
+        </div>
+
+        <div className="left-1/2 w-1/2">
+          <Slider
+            aria-label="volume"
+            defaultValue={5}
+            sx={{
+              color: "white",
+            }}
+            onChange={(event: Event, value: number) => setBrushSize(value)}
+            valueLabelDisplay="auto"
+            shiftStep={30}
+            step={1}
+            min={1}
+            max={12}
+          />
+        </div>
       </div>
       <div className="absolute flex flex-col right-10 t-0 m-10 z-10 text-2xl font-bold text-black">
         {users.map((user) => {
           return (
-          <div className="font-bold text-black">
-            {user.username}
-          </div>);
+            <div className="font-bold text-white drop-shadow-[0_2.2px_1.2px_rgba(0,0,0,0.8)]">
+              {user.username}
+            </div>
+          );
         })}
       </div>
 
@@ -216,7 +281,6 @@ function Whiteboard() {
           {currentLine && toKonvaLine(currentLine, lines.length - 1)}
         </Layer>
       </Stage>
-
     </div>
   );
 }
