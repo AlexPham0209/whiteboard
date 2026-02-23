@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { socket, connect } from "./socket";
-import Whiteboard from "./pages/Whiteboard";
+import Whiteboard from "./pages/whiteboard/Whiteboard";
 import Join from "./pages/Join";
 import {
   BrowserRouter,
