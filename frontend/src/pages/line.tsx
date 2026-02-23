@@ -15,13 +15,13 @@ export const toKonvaLine = (line: Line, i: number) => {
     <Line
       key={i}
       points={line.points}
-      stroke={line.color}
+      stroke={line.draw_mode === "erase" ? line.color : "white"}
       strokeWidth={line.brush_size}
       tension={0.5}
       lineCap="round"
       lineJoin="round"
       globalCompositeOperation={
-        line.draw_mode === "erase" ? "destination-out" : "source-over"
+        "source-over"
       }
     />
   );

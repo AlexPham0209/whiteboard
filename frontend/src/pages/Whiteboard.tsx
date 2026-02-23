@@ -17,7 +17,7 @@ function Whiteboard() {
   const stageHeight = size.height;
 
   //Brush settings
-  const [mode, ] = useState<DrawMode>("draw");
+  const [mode, setMode] = useState<DrawMode>("draw");
   const [color, ] = useState<Color>("black");
   const [brushSize, ] = useState<number>(5);
   const [lines, setLines] = useState<Line[]>([]);
@@ -170,6 +170,19 @@ function Whiteboard() {
   return (
     <div className="w-full h-full flex justify-center">
       <div className="absolute m-auto mt-10 z-10 text-2xl font-bold text-black">{roomCode}</div>
+      <div className="absolute flex flex-row z-11 bottom-10 w-1/2 text-2xl rounded-4xl font-bold bg-gray-800 shadow-2xl p-5">
+        <button className="text-white" onClick={() => {
+          switch (mode) {
+            case "draw":
+              setMode("erase");
+              break;
+
+            case "erase":
+              setMode("draw");
+              break;
+          }
+        }}>{mode}</button>
+      </div>
       <div className="absolute flex flex-col right-10 t-0 m-10 z-10 text-2xl font-bold text-black">
         {users.map((user) => {
           return (
@@ -178,6 +191,7 @@ function Whiteboard() {
           </div>);
         })}
       </div>
+
       <Stage
         ref={stageRef}
         width={stageWidth}
@@ -202,6 +216,7 @@ function Whiteboard() {
           {currentLine && toKonvaLine(currentLine, lines.length - 1)}
         </Layer>
       </Stage>
+
     </div>
   );
 }
