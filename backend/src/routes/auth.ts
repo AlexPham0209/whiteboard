@@ -1,77 +1,13 @@
 import bcrypt from "bcrypt";
-import { createUser, getUser, userExists } from "../db/users.js";
+import { createUser, getUser, userExists } from "../models/users.js";
 import express from "express";
 import jwt, { type VerifyErrors } from "jsonwebtoken";
 import { AppError } from "@/utils/error.js";
+import { login, register } from "@/controllers/authController.js";
 
 const router = express.Router();
 
-const SALT_ROUNDS =
-  process.env.SALT_ROUNDS !== undefined ? Number(process.env.SALT_ROUNDS) : 12;
-
-const SECRET = process.env.SECRET;
-const { sign, verify } = jwt;
-
-router.post("/register", async (req, res, next) => {
-  const username = req.body.username;
-  const password = req.body.password;
-
-  if (!username || !password)
-    return next(new AppError("Invalid Username or Password", 400));
-
-  try {
-    const exists = await userExists(username);
-
-    if (exists)
-      return next(new AppError("User already exists in database", 409));
-
-    const hash = await bcrypt.hash(password, SALT_ROUNDS);
-    const result = await createUser(username, hash);
-    
-    const token = sign(
-      {
-        data: { user_id: result.user_id },
-      },
-      SECRET!,
-      { expiresIn: "1h" },
-    );
-
-    res.status(201).json({ success: true, token: token });
-  } catch (err) {
-    return next(err);
-  }
-});
-
-router.post("/login", async (req, res, next) => {
-  const username = req.body.username;
-  const password = req.body.password;
-
-  if (!username || !password)
-    return next(new AppError("Invalid Username or Password", 401));
-
-  try {
-    const result = await getUser(username);
-    const user_id = result.user_id;
-    const hashed_password = result.password;
-
-    const same = await bcrypt.compare(password, hashed_password);
-
-    if (same) {
-      const token = sign(
-        {
-          data: { user_id: user_id },
-        },
-        SECRET!,
-        { expiresIn: "1h" },
-      );
-
-      res.status(200).json({ success: true, token: token });
-    } else {
-      return next(new AppError("Invalid Username or Password", 401));
-    }
-  } catch (err) {
-    return next(err);
-  }
-});
+router.post("/register", register);
+router.post("/login", login);
 
 export default router;

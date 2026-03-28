@@ -13,12 +13,13 @@ import {
   getUserCountInRoom,
   getUsersInRoom,
   roomExists,
-} from "./db/rooms.js";
-import { addLine, getCanvas, type Line } from "./db/lines.js";
+} from "./models/rooms.js";
+import { addLine, getCanvas, type Line } from "./models/lines.js";
 
 import jwt, { type VerifyErrors } from "jsonwebtoken";
 import { AppError } from "./utils/error.js";
 import authRoute from "./routes/auth.js";
+import apiRoute from "./routes/api.js";
 
 // Environment variables
 const PORT = process.env.SERVER_PORT;
@@ -38,8 +39,9 @@ const io = new Server(server, {
   cors: CORS_CONFIG,
 });
 
-// Authentication Route
+// Routes
 app.use("/auth", authRoute);
+app.use("/api", apiRoute);
 
 // Custom Error Handling
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {

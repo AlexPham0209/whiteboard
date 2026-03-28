@@ -1,16 +1,18 @@
 import { AppError } from "@/utils/error.js";
-import pool from "./db.js";
+import pool from "../db/db.js";
 
 export const createUser = async (username: string, password: string) => {
   try {
-    let users = await pool.query(
+    let result = await pool.query(
       `INSERT INTO users (username, password) 
       VALUES ($1, $2)
       RETURNING id`,
       [username, password],
     );
 
-    return users.rows[0];
+    if (result.rows.length === 0) throw new AppError("Couldn't create users", 400);
+
+    return result.rows[0];
   } catch (err) {
     throw err;
   }
@@ -19,8 +21,7 @@ export const createUser = async (username: string, password: string) => {
 export const getUser = async (username: string) => {
   try {
     let result = await pool.query(
-      `SELECT id, password
-      FROM users
+      `SELECT id, password FROM users
       WHERE username=$1`,
       [username],
     );
@@ -37,8 +38,8 @@ export const userExists = async (username: string) => {
   try {
     let result = await pool.query(
       `SELECT 1 FROM users 
-        WHERE username=$1 
-        LIMIT 1`,
+      WHERE username=$1 
+      LIMIT 1`,
       [username],
     );
 

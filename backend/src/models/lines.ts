@@ -1,4 +1,4 @@
-import pool from "./db.js";
+import pool from "../db/db.js";
 
 export interface Line {
   draw_mode: string;
@@ -11,8 +11,7 @@ export const addLine = async (user_id: string, line: Line) => {
   try {
     const result = await pool.query(
       `INSERT INTO lines (room_id, user_id, draw_mode, color, brush_size, points) 
-      SELECT room_id, user_id, $1, $2, $3, $4 
-      FROM rooms 
+      SELECT room_id, user_id, $1, $2, $3, $4 FROM rooms 
       JOIN members ON rooms.id = members.room_id 
       JOIN users ON members.user_id = $5 
       RETURNING *`,

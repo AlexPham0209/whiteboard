@@ -21,6 +21,7 @@ export default function SignUp({
       })
       .then((res) => {
         sessionStorage.setItem("token", res.data);
+        setJoined(true);
       })
       .catch((err) => {
         console.log(err.response.data.message);

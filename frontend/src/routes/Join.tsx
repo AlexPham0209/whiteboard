@@ -46,10 +46,10 @@ export default function Join({
       });
   };
 
-  const onUserNameChange = (e: React.FormEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    setUserName((e.target as HTMLInputElement).value);
-  };
+  // const onUserNameChange = (e: React.FormEvent<HTMLInputElement>) => {
+  //   e.preventDefault();
+  //   setUserName((e.target as HTMLInputElement).value);
+  // };
 
   const onRoomCodeChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault();
