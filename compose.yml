@@ -19,7 +19,7 @@ services:
       - 2094:2094
     depends_on:
       - backend
-  
+
   db:
     image: postgres:latest
     volumes:

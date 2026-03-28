@@ -14,8 +14,9 @@ CREATE INDEX idx_room_code ON rooms (room_code);
 -- Users
 CREATE TABLE users (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(), 
-    username UNIQUE VARCHAR(16),
-    password VARCHAR(16)
+    username VARCHAR(30),
+    password VARCHAR,
+    UNIQUE (username)
 );
 
 -- Members
@@ -35,9 +36,9 @@ CREATE TABLE members (
     UNIQUE (user_id, room_id)
 );
 
-CREATE INDEX idx_user_id ON members (user_id);
-CREATE INDEX idx_room_id ON members (room_id);
-CREATE INDEX idx_joined_at ON members (joined_at);
+CREATE INDEX idx_members_user_id ON members (user_id);
+CREATE INDEX idx_members_room_id ON members (room_id);
+CREATE INDEX idx_members_joined_at ON members (joined_at);
 
 -- Lines
 CREATE TABLE lines (
@@ -55,11 +56,9 @@ CREATE TABLE lines (
 
     CONSTRAINT fk_room 
         FOREIGN KEY (room_id) REFERENCES rooms(id)
-        ON DELETE CASCADE,
-
-    UNIQUE (room_id, user_id)
+        ON DELETE CASCADE
 );
 
-CREATE INDEX idx_user_id ON lines (user_id);
-CREATE INDEX idx_room_id ON lines (room_id);
-CREATE INDEX idx_created_at ON lines (created_at);
+CREATE INDEX idx_lines_user_id ON lines (user_id);
+CREATE INDEX idx_lines_room_id ON lines (room_id);
+CREATE INDEX idx_lines_created_at ON lines (created_at);

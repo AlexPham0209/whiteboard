@@ -17,11 +17,13 @@ export function Palette({
   setColor: React.Dispatch<React.SetStateAction<Color>>;
   setBrushSize: React.Dispatch<React.SetStateAction<number>>;
 }) {
-
-  const onModeChange = (_: React.MouseEvent<HTMLElement>, nextView: DrawMode) => {
+  const onModeChange = (
+    _: React.MouseEvent<HTMLElement>,
+    nextView: DrawMode,
+  ) => {
     if (nextView !== null) setMode(nextView);
   };
-  
+
   const onBrushSizeChange = (_: Event, value: number) => setBrushSize(value);
 
   return (
@@ -34,10 +36,10 @@ export function Palette({
           exclusive
           onChange={onModeChange}
         >
-          <ModeButton mode={"draw"} selected={mode} src={"brush.png"}/>
-          <ModeButton mode={"erase"} selected={mode} src={"erase.png"}/>
+          <ModeButton mode={"draw"} selected={mode} src={"brush.png"} />
+          <ModeButton mode={"erase"} selected={mode} src={"erase.png"} />
         </ToggleButtonGroup>
-        
+
         <ColorSelector color={"red"} selected={color} setColor={setColor} />
         <ColorSelector color={"black"} selected={color} setColor={setColor} />
         <ColorSelector color={"blue"} selected={color} setColor={setColor} />

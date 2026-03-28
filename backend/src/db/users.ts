@@ -1,59 +1,57 @@
+import { AppError } from "@/utils/error.js";
 import pool from "./db.js";
 
-export const addUser = async (user: string, room: string) => {
-  if (room.length !== 5) throw new Error("Invalid room code");
-
+export const createUser = async (username: string, password: string) => {
   try {
     let users = await pool.query(
-      "INSERT INTO users (username, room_id) SELECT $1, id FROM rooms WHERE room_code=$2 RETURNING id",
-      [user, room],
+      `INSERT INTO users (username, password) 
+      VALUES ($1, $2)
+      RETURNING id`,
+      [username, password],
     );
+
     return users.rows[0];
-  } catch (e) {
-    throw new Error("Unable to create user");
+  } catch (err) {
+    throw err;
   }
 };
 
-export const userExists = async (user: string, room: string) => {
+export const getUser = async (username: string) => {
   try {
     let result = await pool.query(
-      "SELECT * FROM users JOIN rooms ON room_id = rooms.id WHERE username=$1 AND room_code=$2",
-      [user, room],
+      `SELECT id, password
+      FROM users
+      WHERE username=$1`,
+      [username],
     );
 
-    return result.rowCount !== null && result.rowCount > 0;
-  } catch (e) {
-    console.log(e);
-    return true;
+    if (result.rows.length === 0) throw new AppError("Invalid Username or Password", 401);
+
+    return result.rows[0];
+  } catch (err) {
+    throw err;
+  }
+};
+
+export const userExists = async (username: string) => {
+  try {
+    let result = await pool.query(
+      `SELECT 1 FROM users 
+        WHERE username=$1 
+        LIMIT 1`,
+      [username],
+    );
+
+    return result.rows.length > 0;
+  } catch (err) {
+    return false;
   }
 };
 
 export const removeUser = async (id: string) => {
   try {
     await pool.query("DELETE FROM users WHERE id=$1", [id]);
-  } catch (e) {
-    console.log(e);
-    throw new Error("Failed to delete user");
-  }
-};
-
-export const removeAllUsers = async () => {
-  try {
-    await pool.query("DELETE FROM users", []);
-  } catch (e) {
-    console.log(e);
-    throw new Error("Failed to delete user");
-  }
-};
-
-export const getRoomFromUser = async (id: string) => {
-  try {
-    await pool.query(
-      "SELECT room_code FROM rooms JOIN users ON rooms.id = users.room_id WHERE users.id = $1",
-      [id],
-    );
-  } catch (e) {
-    console.log(e);
-    throw new Error("Failed to delete user");
+  } catch (err) {
+    throw err;
   }
 };
