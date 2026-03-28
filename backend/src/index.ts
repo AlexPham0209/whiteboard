@@ -7,7 +7,6 @@ import express, {
 import { createServer } from "http";
 import { Server } from "socket.io";
 import cors from "cors";
-import pool from "./db/db.js";
 import { addUser, removeAllUsers, removeUser, userExists } from "./db/users.js";
 import {
   createRoom,
@@ -19,7 +18,10 @@ import {
 import { addLine, getCanvas, type Line } from "./db/lines.js";
 
 import jwt, { type VerifyErrors } from "jsonwebtoken";
+import bcrypt from "bcrypt";
+
 const { sign, verify } = jwt;
+
 
 const PORT = process.env.SERVER_PORT;
 const SECRET = process.env.SECRET;
@@ -37,6 +39,7 @@ const server = createServer(app);
 const io = new Server(server, {
   cors: CORS_CONFIG,
 });
+
 
 // Disconnect all previous users
 removeAllUsers();
@@ -104,7 +107,7 @@ io.use(async (socket, next) => {
 
   verify(token, SECRET!, async (err: VerifyErrors | null, decoded: any) => {
     if (err) return next(new Error("Authentication Error"));
-
+    
     // Check if rooms exists before joining
     const room = await roomExists(decoded.data.room_code);
     if (!room) return next(new Error("Room doesn't exist"));
@@ -130,7 +133,7 @@ io.on("connection", async (socket) => {
       return undefined;
     },
   );
-
+  
   if (data === undefined) return;
 
   socket.data.user_id = data.id;
@@ -138,7 +141,7 @@ io.on("connection", async (socket) => {
 
   const users = await getUsersInRoom(socket.data.room_code);
   socket.broadcast.to(socket.data.room_code).emit("update_users", users);
-
+  
   socket.on("add_line", async (line: Line) => {
     await addLine(socket.data.user_id, line);
     socket.broadcast.to(socket.data.room_code).emit("update", line);

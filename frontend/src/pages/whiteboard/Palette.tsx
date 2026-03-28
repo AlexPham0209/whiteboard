@@ -25,8 +25,8 @@ export function Palette({
   const onBrushSizeChange = (_: Event, value: number) => setBrushSize(value);
 
   return (
-    <div className="absolute flex flex-col z-11 justify-between items-center bottom-10 w-1/3 h-35 text-2xl rounded-4xl font-bold bg-gray-900 shadow-2xl p-5">
-      <div className="flex flex-row justify-center items-center gap-10">
+    <div className="absolute flex flex-col z-11 justify-between items-center bottom-10 w-90 h-35 text-2xl rounded-4xl font-bold bg-gray-900 shadow-2xl p-5">
+      <div className="flex flex-row justify-center items-center gap-5">
         <ToggleButtonGroup
           color="success"
           orientation="horizontal"
