@@ -1,7 +1,7 @@
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { type Request, type Response, type NextFunction } from "express";
-import AppError from "@/utils/error.js";
-import { authenticateUser } from "@/models/users.js";
+import AppError from "../utils/error.js";
+import { authenticateUser } from "../models/users.js";
 import type { ExtendedError, Socket } from "socket.io";
 
 // JWT secrets

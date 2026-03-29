@@ -1,5 +1,5 @@
-import { addMember, removeMember } from "@/models/members.js";
-import { getMembersInRoom, roomExists } from "@/models/rooms.js";
+import { addMember, removeMember } from "../models/members.js";
+import { getMembersInRoom, roomExists } from "../models/rooms.js";
 import type { Server, Socket } from "socket.io";
 
 const registerRoomHandlers = (io: Server, socket: Socket) => {

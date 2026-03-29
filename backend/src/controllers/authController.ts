@@ -1,5 +1,5 @@
-import { createUser, getUser, userExists } from "@/models/users.js";
-import AppError from "@/utils/error.js";
+import { createUser, getUser, userExists } from "../models/users.js";
+import AppError from "../utils/error.js";
 import { type Request, type Response, type NextFunction } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";

@@ -1,4 +1,4 @@
-import { getMembersInRoom } from "@/models/rooms.js";
+import { getMembersInRoom } from "../models/rooms.js";
 import type { Server, Socket } from "socket.io";
 
 const registerUserHandlers = (io: Server, socket: Socket) => {

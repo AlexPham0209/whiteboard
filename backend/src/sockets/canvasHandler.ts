@@ -1,4 +1,4 @@
-import { addLine, getCanvas, type Line } from "@/models/lines.js";
+import { addLine, getCanvas, type Line } from "../models/lines.js";
 import type { Server, Socket } from "socket.io";
 
 const registerCanvasHandlers = (io: Server, socket: Socket) => {

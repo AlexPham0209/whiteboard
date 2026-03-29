@@ -1,4 +1,4 @@
-import AppError from "@/utils/error.js";
+import AppError from "../utils/error.js";
 import pool from "../db/db.js";
 
 export const createUser = async (username: string, password: string) => {
