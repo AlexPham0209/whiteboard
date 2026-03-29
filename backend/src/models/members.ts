@@ -53,7 +53,8 @@ export const getRoomFromMember = async (id: string) => {
   try {
     await pool.query(
       `SELECT room_code FROM rooms 
-      JOIN users ON rooms.id = users.room_id WHERE users.id = $1`,
+      JOIN users ON rooms.id = users.room_id 
+      WHERE users.id = $1`,
       [id],
     );
   } catch (err) {

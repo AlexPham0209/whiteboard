@@ -1,10 +1,6 @@
 import { createUser, getUser, userExists } from "@/models/users.js";
 import { AppError } from "@/utils/error.js";
-import {
-  type Request,
-  type Response,
-  type NextFunction,
-} from "express";
+import { type Request, type Response, type NextFunction } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
@@ -17,7 +13,11 @@ const SECRET = process.env.SECRET;
 const { sign } = jwt;
 
 // Register
-export const register = async (req: Request, res: Response, next: NextFunction) => {
+export const register = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const username = req.body.username;
   const password = req.body.password;
 
@@ -27,15 +27,14 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
   try {
     const exists = await userExists(username);
 
-    if (exists)
-      return next(new AppError("User already exists in database", 409));
+    if (exists) return next(new AppError("User already exists", 409));
 
     const hash = await bcrypt.hash(password, SALT_ROUNDS);
     const result = await createUser(username, hash);
-    
+
     const token = sign(
       {
-        data: { user_id: result.user_id },
+        data: { userId: result.id, username: username },
       },
       SECRET!,
       { expiresIn: "1h" },
@@ -45,10 +44,14 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
   } catch (err) {
     return next(err);
   }
-}
+};
 
 // Login
-export const login = async (req: Request, res: Response, next: NextFunction) => {
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const username = req.body.username;
   const password = req.body.password;
 
@@ -57,7 +60,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
 
   try {
     const result = await getUser(username);
-    const user_id = result.user_id;
+    const user_id = result.id;
     const hashed_password = result.password;
 
     const same = await bcrypt.compare(password, hashed_password);
@@ -65,7 +68,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
     if (same) {
       const token = sign(
         {
-          data: { user_id: user_id },
+          data: { userId: user_id, username: username },
         },
         SECRET!,
         { expiresIn: "1h" },
@@ -78,4 +81,4 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
   } catch (err) {
     return next(err);
   }
-}
+};

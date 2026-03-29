@@ -20,7 +20,7 @@ export default function SignUp({
         },
       })
       .then((res) => {
-        sessionStorage.setItem("token", res.data);
+        sessionStorage.setItem("token", res.data.token);
         setJoined(true);
       })
       .catch((err) => {

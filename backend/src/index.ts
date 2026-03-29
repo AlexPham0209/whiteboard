@@ -49,7 +49,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
   if (err instanceof AppError)
     res.status(err.status).json({ success: false, message: err.message });
-  else 
+  else
     res.status(500).json({ success: false, message: "Internal server error" });
 });
 

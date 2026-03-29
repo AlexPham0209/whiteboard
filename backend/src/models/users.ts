@@ -10,7 +10,8 @@ export const createUser = async (username: string, password: string) => {
       [username, password],
     );
 
-    if (result.rows.length === 0) throw new AppError("Couldn't create users", 400);
+    if (result.rows.length === 0)
+      throw new AppError("Couldn't create users", 400);
 
     return result.rows[0];
   } catch (err) {
@@ -26,7 +27,8 @@ export const getUser = async (username: string) => {
       [username],
     );
 
-    if (result.rows.length === 0) throw new AppError("Invalid Username or Password", 401);
+    if (result.rows.length === 0)
+      throw new AppError("Invalid Username or Password", 401);
 
     return result.rows[0];
   } catch (err) {
@@ -45,7 +47,22 @@ export const userExists = async (username: string) => {
 
     return result.rows.length > 0;
   } catch (err) {
-    return false;
+    throw err;
+  }
+};
+
+export const validateUser = async (user_id: string, username: string) => {
+  try {
+    let result = await pool.query(
+      `SELECT 1 FROM users 
+      WHERE id=$1 AND username=$2 
+      LIMIT 1`,
+      [user_id, username],
+    );
+
+    return result.rows.length > 0;
+  } catch (err) {
+    throw err;
   }
 };
 

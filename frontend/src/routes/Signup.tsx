@@ -20,10 +20,9 @@ export default function SignUp({
         },
       })
       .then((res) => {
-        sessionStorage.setItem("token", res.data);
+        sessionStorage.setItem("token", res.data.token);
       })
       .catch((err) => {
-        console.log("HELLO");
         console.log(err.response.data.message);
         setJoined(false);
         setUserName("");
