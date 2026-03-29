@@ -56,10 +56,10 @@ export const deleteAllRooms = async (code: string) => {
   }
 };
 
-export const getUsersInRoom = async (code: string) => {
+export const getMembersInRoom = async (room_id: string) => {
   const result = await pool.query(
-    "SELECT username, joined_at FROM members JOIN rooms ON members.room_id = rooms.id JOIN users ON members.user_id = users.id WHERE rooms.room_code = $1 ORDER BY joined_at ASC",
-    [code],
+    "SELECT username, joined_at FROM members JOIN users ON members.user_id = users.id WHERE members.room_id = $1 ORDER BY joined_at ASC",
+    [room_id],
   );
 
   return result.rows;
@@ -67,7 +67,7 @@ export const getUsersInRoom = async (code: string) => {
 
 export const getUserCountInRoom = async (id: string) => {
   const result = await pool.query(
-    "SELECT COUNT(*) FROM members JOIN rooms ON members.room_id = rooms.id",
+    "SELECT COUNT(*) FROM members JOIN users ON members.user_id = users.id WHERE members.room_id = $1",
     [id],
   );
 

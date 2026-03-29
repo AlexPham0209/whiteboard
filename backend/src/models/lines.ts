@@ -11,9 +11,9 @@ export const addLine = async (user_id: string, line: Line) => {
   try {
     const result = await pool.query(
       `INSERT INTO lines (room_id, user_id, draw_mode, color, brush_size, points) 
-      SELECT room_id, user_id, $1, $2, $3, $4 FROM rooms 
-      JOIN members ON rooms.id = members.room_id 
-      JOIN users ON members.user_id = $5 
+      SELECT room_id, user_id, $1, $2, $3, $4 
+      FROM members
+      WHERE members.user_id=$1
       RETURNING *`,
       [line.draw_mode, line.color, line.brush_size, line.points, user_id],
     );
@@ -24,7 +24,24 @@ export const addLine = async (user_id: string, line: Line) => {
   }
 };
 
-export const getCanvas = async (room_code: string) => {
+export const getCanvas = async (room_id: string) => {
+  try {
+    const result = await pool.query(
+      `SELECT lines.user_id, lines.draw_mode, lines.color, lines.brush_size, lines.points 
+      FROM lines 
+      WHERE lines.room_id = $1 
+      ORDER BY lines.created_at ASC`,
+      [room_id],
+    );
+
+    return result.rows as Line[];
+  } catch (e) {
+    throw e;
+  }
+};
+
+
+export const getCanvasFromCode = async (room_code: string) => {
   try {
     const result = await pool.query(
       `SELECT lines.user_id, lines.draw_mode, lines.color, lines.brush_size, lines.points 
@@ -42,19 +59,3 @@ export const getCanvas = async (room_code: string) => {
   }
 };
 
-export const getCanvasFromID = async (room_id: string) => {
-  try {
-    const result = await pool.query(
-      `SELECT lines.user_id, lines.draw_mode, lines.color, lines.brush_size, lines.points 
-      FROM lines 
-      WHERE lines.room_id = $1 
-      ORDER BY lines.created_at ASC`,
-      [room_id],
-    );
-
-    return result.rows as Line[];
-  } catch (e) {
-    console.log(e);
-    return new Error("Failed to get canvas");
-  }
-};

@@ -1,3 +1,4 @@
+import AppError from "@/utils/error.js";
 import pool from "../db/db.js";
 
 export const addMember = async (user_id: string, room_code: string) => {
@@ -6,14 +7,19 @@ export const addMember = async (user_id: string, room_code: string) => {
   try {
     let users = await pool.query(
       `INSERT INTO members (user_id, room_id) 
-      SELECT $1, id FROM rooms 
-      WHERE room_code=$2 
-      RETURNING id`,
+      SELECT users.id, rooms.id FROM rooms 
+      JOIN users
+      ON users.id=$1 AND rooms.room_code=$2
+      RETURNING id, room_id`,
       [user_id, room_code],
     );
+
+    if (users.rows.length === 0)
+      throw new AppError("Unable to create room", 400);
+
     return users.rows[0];
-  } catch (e) {
-    throw new Error("Unable to create user");
+  } catch (err) {
+    throw err;
   }
 };
 

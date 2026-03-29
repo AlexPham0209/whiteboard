@@ -21,9 +21,8 @@ function Pages() {
   const [joined, setJoined] = useState(false);
 
   useEffect(() => {
-    if (!joined)
-      return;
-    
+    if (!joined) return;
+
     const config = {
       headers: {
         Authorization: "Bearer " + sessionStorage.getItem("token"),

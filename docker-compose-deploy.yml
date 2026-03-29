@@ -1,5 +1,10 @@
 version: "latest"
 services:
+  test-backend:
+    build: ./backend
+    env_file:
+      - ./backend/.env
+    
   backend:
     build: ./backend
     env_file:
