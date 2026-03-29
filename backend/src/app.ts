@@ -3,18 +3,10 @@ import express, {
   type Response,
   type NextFunction,
 } from "express";
-import { createServer } from "http";
-import { Server } from "socket.io";
 import cors from "cors";
 import AppError from "./utils/error.js";
 import authRoute from "./routes/auth.js";
 import apiRoute from "./routes/api.js";
-import { authenticateSocket } from "./middleware/authMiddleware.js";
-import registerRoomHandlers from "./sockets/roomHandler.js";
-import registerCanvasHandlers from "./sockets/canvasHandler.js";
-import registerMessageHandlers from "./sockets/messageHandler.js";
-import registerUserHandlers from "./sockets/memberHandler.js";
-
 
 // Environment variables
 export const CORS_CONFIG = {

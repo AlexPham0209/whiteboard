@@ -8,7 +8,6 @@ import registerUserHandlers from "./sockets/memberHandler.js";
 import { app, CORS_CONFIG } from "./app.js";
 
 export const PORT = process.env.SERVER_PORT;
-// Setting up Socket.io server
 export const server = createServer(app);
 export const io = new Server(server, {
   cors: CORS_CONFIG,
