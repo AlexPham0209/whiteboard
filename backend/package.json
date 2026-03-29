@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Backend for Whiteboard Website",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest",
     "dev": "nodemon",
     "start": "tsx ./src/index.ts"
   },
@@ -27,6 +27,8 @@
     "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "jest": "^30.3.0",
+    "nodemon": "^3.1.11",
+    "ts-jest": "^29.4.6"
   }
 }

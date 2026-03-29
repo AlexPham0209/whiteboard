@@ -1,4 +1,4 @@
-import { AppError } from "@/utils/error.js";
+import AppError from "@/utils/error.js";
 import pool from "../db/db.js";
 
 export const createUser = async (username: string, password: string) => {
@@ -51,7 +51,7 @@ export const userExists = async (username: string) => {
   }
 };
 
-export const validateUser = async (user_id: string, username: string) => {
+export const authenticateUser = async (user_id: string, username: string) => {
   try {
     let result = await pool.query(
       `SELECT 1 FROM users 

@@ -1,5 +1,5 @@
 import { createUser, getUser, userExists } from "@/models/users.js";
-import { AppError } from "@/utils/error.js";
+import AppError from "@/utils/error.js";
 import { type Request, type Response, type NextFunction } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -22,7 +22,7 @@ export const register = async (
   const password = req.body.password;
 
   if (!username || !password)
-    return next(new AppError("Invalid Username or Password", 400));
+    return next(new AppError("Username and password are required", 400));
 
   try {
     const exists = await userExists(username);
@@ -56,7 +56,7 @@ export const login = async (
   const password = req.body.password;
 
   if (!username || !password)
-    return next(new AppError("Invalid Username or Password", 401));
+    return next(new AppError("Username and password are required", 400));
 
   try {
     const result = await getUser(username);
