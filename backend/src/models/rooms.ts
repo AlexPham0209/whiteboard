@@ -16,9 +16,10 @@ export const createRoom = async (client?: DB) => {
   while (result === null) {
     let code = generateCode();
     result = await (client || pool)
-      .query("INSERT INTO rooms (room_code) VALUES ($1) RETURNING id, room_code", [
-        code,
-      ])
+      .query(
+        "INSERT INTO rooms (room_code) VALUES ($1) RETURNING id, room_code",
+        [code],
+      )
       .catch(() => {
         console.log("Room code already exists in the database!");
         return null;

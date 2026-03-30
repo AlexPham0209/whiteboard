@@ -1,15 +1,15 @@
 import AppError from "../utils/error.js";
 import pool from "../db/db.js";
+import type { DB } from "@/utils/types.js";
 
-export const addMember = async (user_id: string, room_code: string) => {
+export const addMember = async (user_id: string, room_code: string, db: DB) => {
   if (room_code.length !== 5) throw new Error("Invalid room code");
 
   try {
-    let users = await pool.query(
+    let users = await (db || pool).query(
       `INSERT INTO members (user_id, room_id) 
-      SELECT users.id, rooms.id FROM rooms 
-      JOIN users
-      ON users.id=$1 AND rooms.room_code=$2
+      SELECT $1, rooms.id FROM rooms 
+      WHERE rooms.room_code=$2
       RETURNING id, room_id`,
       [user_id, room_code],
     );
@@ -23,15 +23,18 @@ export const addMember = async (user_id: string, room_code: string) => {
   }
 };
 
-export const memberExists = async (user: string, room: string) => {
+export const memberExists = async (user: string, room: string, db: DB) => {
   try {
-    let result = await pool.query(
-      `SELECT 1 FROM users 
+    let result = await (db || pool).query(
+      `SELECT 1 FROM members 
       JOIN rooms ON room_id = rooms.id 
-      WHERE username=$1 AND room_code=$2 
+      JOIN users ON user_id = users.id
+      WHERE users.username=$1 AND rooms.room_code=$2 
       LIMIT 1`,
       [user, room],
     );
+
+    if (result.rows.length === 0) return false;
 
     return result.rows[0].length !== 0;
   } catch (err) {
@@ -39,30 +42,31 @@ export const memberExists = async (user: string, room: string) => {
   }
 };
 
-export const removeMember = async (id: string) => {
+export const removeMember = async (id: string, db: DB) => {
   try {
-    await pool.query("DELETE FROM users WHERE id=$1", [id]);
+    await (db || pool).query("DELETE FROM members WHERE id=$1", [id]);
   } catch (err) {
     throw err;
   }
 };
 
-export const removeAllMembers = async () => {
+export const removeAllMembers = async (db: DB) => {
   try {
-    await pool.query("DELETE FROM users", []);
+    await (db || pool).query("DELETE FROM users", []);
   } catch (err) {
     throw err;
   }
 };
 
-export const getRoomFromMember = async (id: string) => {
+export const getRoomFromMember = async (id: string, db: DB) => {
   try {
-    await pool.query(
-      `SELECT room_code FROM rooms 
-      JOIN users ON rooms.id = users.room_id 
-      WHERE users.id = $1`,
+    const result = await (db || pool).query(
+      `SELECT rooms.id, rooms.room_code FROM rooms 
+      JOIN members ON rooms.id = members.room_id 
+      WHERE members.id = $1`,
       [id],
     );
+    return result.rows[0];
   } catch (err) {
     throw err;
   }

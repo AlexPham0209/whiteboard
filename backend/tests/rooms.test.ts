@@ -2,9 +2,15 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import AppError from "../src/utils/error.js";
 import { PoolClient } from "pg";
 import { dbTest } from "./contexts/dbTestContext.js";
-import { createRoom, deleteRoom, roomExists, roomExistsFromCode } from "../src/models/rooms.js";
+import {
+  createRoom,
+  deleteRoom,
+  roomExists,
+  roomExistsFromCode,
+} from "../src/models/rooms.js";
 
-const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
+const uuidRegex =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
 
 describe("Rooms Model Tests", () => {
   dbTest("Create room", async ({ dbClient }) => {
@@ -19,7 +25,9 @@ describe("Rooms Model Tests", () => {
     const { id, room_code } = await createRoom(dbClient);
     expect(await roomExists(id, dbClient)).toBe(true);
     expect(await roomExistsFromCode(room_code, dbClient)).toBe(true);
-    expect(await roomExists("dd9f9cf0-61b1-4a97-9e15-a9dfdfbefa95", dbClient)).toBe(false);
+    expect(
+      await roomExists("dd9f9cf0-61b1-4a97-9e15-a9dfdfbefa95", dbClient),
+    ).toBe(false);
     expect(await roomExistsFromCode("ABCDE", dbClient)).toBe(false);
   });
 
@@ -27,5 +35,20 @@ describe("Rooms Model Tests", () => {
     const { id, room_code } = await createRoom(dbClient);
     await deleteRoom(id, dbClient);
     await expect(roomExists(id, dbClient)).resolves.toBe(false);
+  });
+
+  dbTest("Delete non-existent room", async ({ dbClient }) => {
+    try {
+      await deleteRoom("dd9f9cf0-61b1-4a97-9e15-a9dfdfbefa95", dbClient);
+    } catch (err) {
+      expect(err).toBeInstanceOf(Error);
+    }
+  });
+
+  dbTest("Create multiple rooms", async ({ dbClient }) => {
+    const room1 = await createRoom(dbClient);
+    const room2 = await createRoom(dbClient);
+    expect(room1.id).not.toBe(room2.id);
+    expect(room1.room_code).not.toBe(room2.room_code);
   });
 });

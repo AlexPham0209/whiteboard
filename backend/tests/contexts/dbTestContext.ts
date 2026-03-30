@@ -11,7 +11,7 @@ export const dbTest = base.extend<DbContext>({
   dbClient: async ({}, use) => {
     const client = await pool.connect();
     await client.query("BEGIN");
-    
+
     try {
       await use(client);
     } finally {
