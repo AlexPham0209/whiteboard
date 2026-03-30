@@ -14,7 +14,7 @@ services:
       - SECRET=${SECRET}
       - SALT_ROUNDS=${SALT_ROUNDS}
     ports:
-      - 3000:3000
+      - ${SERVER_PORT}:${SERVER_PORT}
     depends_on:
       db:
         condition: service_healthy
@@ -28,7 +28,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
     ports:
-      - 5432:5432
+      - ${POSTGRES_PORT}:5432
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
