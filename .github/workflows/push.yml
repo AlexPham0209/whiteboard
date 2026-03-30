@@ -29,7 +29,8 @@ jobs:
       
       - name: Build and push Docker images
         run: |
-          docker compose push --build
+          docker compose build -f docker-compose-deploy.yml
+          docker compose push -f docker-compose-deploy.yml
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
 
