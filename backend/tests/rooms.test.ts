@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import AppError from "../src/utils/error.js";
 import { PoolClient } from "pg";
-import { dbTest } from "./contexts/databaseTestContext.js";
+import { dbTest } from "./contexts/dbTestContext.js";
 import { createRoom, deleteRoom, roomExists, roomExistsFromCode } from "../src/models/rooms.js";
 
 const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;

@@ -10,7 +10,7 @@ import {
 } from "../src/models/users.js";
 
 import { PoolClient } from "pg";
-import { dbTest } from "./contexts/databaseTestContext.js";
+import { dbTest } from "./contexts/dbTestContext.js";
 
 describe("Users Model Tests", () => {
   dbTest("Should create a user successfully", async ({ dbClient }) => {
