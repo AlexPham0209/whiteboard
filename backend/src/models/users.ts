@@ -1,11 +1,13 @@
 import AppError from "../utils/error.js";
 import pool from "../db/db.js";
-import type { PoolClient } from "pg";
+import type { Pool, PoolClient } from "pg";
+
+type DB = Pool | PoolClient;
 
 export const createUser = async (
   username: string,
   password: string,
-  client?: PoolClient,
+  client?: DB,
 ) => {
   try {
     let result = await (client || pool).query(
@@ -24,7 +26,7 @@ export const createUser = async (
   }
 };
 
-export const getUser = async (username: string, client?: PoolClient) => {
+export const getUser = async (username: string, client?: DB) => {
   try {
     let result = await (client || pool).query(
       `SELECT id, password FROM users
@@ -41,7 +43,7 @@ export const getUser = async (username: string, client?: PoolClient) => {
   }
 };
 
-export const userExists = async (username: string, client?: PoolClient) => {
+export const userExists = async (username: string, client?: DB) => {
   try {
     let result = await (client || pool).query(
       `SELECT 1 FROM users 
@@ -59,7 +61,7 @@ export const userExists = async (username: string, client?: PoolClient) => {
 export const authenticateUser = async (
   user_id: string,
   username: string,
-  client?: PoolClient,
+  client?: DB,
 ) => {
   try {
     let result = await (client || pool).query(
@@ -75,7 +77,7 @@ export const authenticateUser = async (
   }
 };
 
-export const removeUser = async (id: string, client?: PoolClient) => {
+export const removeUser = async (id: string, client?: DB) => {
   try {
     await (client || pool).query("DELETE FROM users WHERE id=$1", [id]);
   } catch (err) {
