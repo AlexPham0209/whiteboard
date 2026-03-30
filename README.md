@@ -42,3 +42,45 @@ Finally, we are using PostgreSQL to store data room information and line data.
 ## Images
 
 This project utilizes two Docker images: a Node.js base image for both the frontend and backend, and a PostgreSQL base image for the database.
+
+### Backend
+```
+FROM node:22.13.1
+
+WORKDIR /app
+COPY package*.json .
+
+RUN npm install
+COPY . . 
+EXPOSE 3000
+
+CMD ["npm", "run", "start"]
+```
+
+### Frontend
+```
+FROM node:22.13.0
+
+WORKDIR /app
+
+ARG NODE_ENV
+ARG VITE_SERVER_PORT
+
+ENV NODE_ENV = ${NODE_ENV}
+ENV VITE_SERVER_PORT=${VITE_SERVER_PORT}
+
+COPY package*.json .
+
+RUN npm install --legacy-peer-deps
+COPY . . 
+EXPOSE 2094
+RUN npm run build
+
+CMD ["npm", "run", "preview"]
+```
+
+## Networking
+
+The PostgreSQL database server to every service in stack using DNS resolution by container name. 
+
+The frontend and the backend are both exposed to the internet. SO, the frontend is communicate with the backend using HTTP requests and socket events.  

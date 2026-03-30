@@ -30,7 +30,7 @@ describe("Users Model Tests", () => {
     });
     
     const result = await createUser("Alex", "password123");
-
+    
     expect(result).toEqual({ id: 1 });
     expect(pool.query).toHaveBeenCalledWith(
       `INSERT INTO users (username, password) 
