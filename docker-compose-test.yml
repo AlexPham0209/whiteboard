@@ -1,6 +1,6 @@
 version: "latest"
 services:
-  backend:
+  test-backend:
     build: ./backend
     command: ["npm", "run", "test"]
     env_file:

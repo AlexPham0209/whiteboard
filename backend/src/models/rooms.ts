@@ -1,3 +1,4 @@
+import type { DB } from "@/utils/types.js";
 import pool from "../db/db.js";
 
 const generateCode = () => {
@@ -9,16 +10,16 @@ const generateCode = () => {
   return res;
 };
 
-export const createRoom = async () => {
+export const createRoom = async (client?: DB) => {
   let result = null;
 
   while (result === null) {
     let code = generateCode();
-    result = await pool
-      .query("INSERT INTO rooms (room_code) VALUES ($1) RETURNING room_code", [
+    result = await (client || pool)
+      .query("INSERT INTO rooms (room_code) VALUES ($1) RETURNING id, room_code", [
         code,
       ])
-      .catch((err) => {
+      .catch(() => {
         console.log("Room code already exists in the database!");
         return null;
       });
@@ -27,9 +28,22 @@ export const createRoom = async () => {
   return result.rows[0];
 };
 
-export const roomExists = async (code: string) => {
+export const roomExists = async (id: string, client?: DB) => {
   try {
-    const result = await pool.query(
+    const result = await (client || pool).query(
+      "SELECT 1 FROM rooms WHERE id=$1 LIMIT 1",
+      [id],
+    );
+
+    return result.rows.length > 0;
+  } catch (e) {
+    return false;
+  }
+};
+
+export const roomExistsFromCode = async (code: string, client?: DB) => {
+  try {
+    const result = await (client || pool).query(
       "SELECT 1 FROM rooms WHERE room_code=$1 LIMIT 1",
       [code],
     );
@@ -40,24 +54,24 @@ export const roomExists = async (code: string) => {
   }
 };
 
-export const deleteRoom = async (code: string) => {
+export const deleteRoom = async (id: string, client?: DB) => {
   try {
-    await pool.query("DELETE FROM rooms WHERE room_code=$1", [code]);
-  } catch (e) {
-    throw new Error("Unable to delete room");
+    await (client || pool).query("DELETE FROM rooms WHERE id=$1", [id]);
+  } catch (err) {
+    throw err;
   }
 };
 
-export const deleteAllRooms = async (code: string) => {
+export const deleteAllRooms = async (code: string, client?: DB) => {
   try {
-    await pool.query("DELETE FROM rooms", [code]);
-  } catch (e) {
-    throw new Error("Unable to all rooms");
+    await (client || pool).query("DELETE FROM rooms", [code]);
+  } catch (err) {
+    throw new Error("Unable to delete all rooms");
   }
 };
 
-export const getMembersInRoom = async (room_id: string) => {
-  const result = await pool.query(
+export const getMembersInRoom = async (room_id: string, client?: DB) => {
+  const result = await (client || pool).query(
     "SELECT username, joined_at FROM members JOIN users ON members.user_id = users.id WHERE members.room_id = $1 ORDER BY joined_at ASC",
     [room_id],
   );
@@ -65,8 +79,8 @@ export const getMembersInRoom = async (room_id: string) => {
   return result.rows;
 };
 
-export const getUserCountInRoom = async (id: string) => {
-  const result = await pool.query(
+export const getUserCountInRoom = async (id: string, client?: DB) => {
+  const result = await (client || pool).query(
     "SELECT COUNT(*) FROM members JOIN users ON members.user_id = users.id WHERE members.room_id = $1",
     [id],
   );

@@ -1,8 +1,7 @@
 import AppError from "../utils/error.js";
 import pool from "../db/db.js";
 import type { Pool, PoolClient } from "pg";
-
-type DB = Pool | PoolClient;
+import type { DB } from "@/utils/types.js";
 
 export const createUser = async (
   username: string,
