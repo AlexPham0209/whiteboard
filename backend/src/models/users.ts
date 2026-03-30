@@ -1,9 +1,10 @@
 import AppError from "../utils/error.js";
 import pool from "../db/db.js";
+import type { PoolClient } from "pg";
 
-export const createUser = async (username: string, password: string) => {
+export const createUser = async (username: string, password: string, client?: PoolClient) => {
   try {
-    let result = await pool.query(
+    let result = await (client || pool).query(
       `INSERT INTO users (username, password) 
       VALUES ($1, $2)
       RETURNING id`,
@@ -19,9 +20,9 @@ export const createUser = async (username: string, password: string) => {
   }
 };
 
-export const getUser = async (username: string) => {
+export const getUser = async (username: string, client?: PoolClient) => {
   try {
-    let result = await pool.query(
+    let result = await (client || pool).query(
       `SELECT id, password FROM users
       WHERE username=$1`,
       [username],
@@ -36,9 +37,9 @@ export const getUser = async (username: string) => {
   }
 };
 
-export const userExists = async (username: string) => {
+export const userExists = async (username: string, client?: PoolClient) => {
   try {
-    let result = await pool.query(
+    let result = await (client || pool).query(
       `SELECT 1 FROM users 
       WHERE username=$1 
       LIMIT 1`,
@@ -51,9 +52,9 @@ export const userExists = async (username: string) => {
   }
 };
 
-export const authenticateUser = async (user_id: string, username: string) => {
+export const authenticateUser = async (user_id: string, username: string, client?: PoolClient) => {
   try {
-    let result = await pool.query(
+    let result = await (client || pool).query(
       `SELECT 1 FROM users 
       WHERE id=$1 AND username=$2 
       LIMIT 1`,
@@ -66,9 +67,9 @@ export const authenticateUser = async (user_id: string, username: string) => {
   }
 };
 
-export const removeUser = async (id: string) => {
+export const removeUser = async (id: string, client?: PoolClient) => {
   try {
-    await pool.query("DELETE FROM users WHERE id=$1", [id]);
+    await (client || pool).query("DELETE FROM users WHERE id=$1", [id]);
   } catch (err) {
     throw err;
   }

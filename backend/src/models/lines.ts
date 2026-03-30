@@ -1,3 +1,4 @@
+import type { PoolClient } from "pg";
 import pool from "../db/db.js";
 
 export interface Line {
@@ -7,9 +8,9 @@ export interface Line {
   points: number[];
 }
 
-export const addLine = async (user_id: string, line: Line) => {
+export const addLine = async (user_id: string, line: Line, client?: PoolClient) => {
   try {
-    const result = await pool.query(
+    const result = await (client || pool).query(
       `INSERT INTO lines (room_id, user_id, draw_mode, color, brush_size, points) 
       SELECT room_id, user_id, $1, $2, $3, $4 
       FROM members
