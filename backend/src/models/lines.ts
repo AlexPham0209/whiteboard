@@ -8,7 +8,11 @@ export interface Line {
   points: number[];
 }
 
-export const addLine = async (user_id: string, line: Line, client?: PoolClient) => {
+export const addLine = async (
+  user_id: string,
+  line: Line,
+  client?: PoolClient,
+) => {
   try {
     const result = await (client || pool).query(
       `INSERT INTO lines (room_id, user_id, draw_mode, color, brush_size, points) 
@@ -41,7 +45,6 @@ export const getCanvas = async (room_id: string) => {
   }
 };
 
-
 export const getCanvasFromCode = async (room_code: string) => {
   try {
     const result = await pool.query(
@@ -59,4 +62,3 @@ export const getCanvasFromCode = async (room_code: string) => {
     return new Error("Failed to get canvas");
   }
 };
-

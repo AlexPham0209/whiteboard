@@ -2,7 +2,11 @@ import AppError from "../utils/error.js";
 import pool from "../db/db.js";
 import type { PoolClient } from "pg";
 
-export const createUser = async (username: string, password: string, client?: PoolClient) => {
+export const createUser = async (
+  username: string,
+  password: string,
+  client?: PoolClient,
+) => {
   try {
     let result = await (client || pool).query(
       `INSERT INTO users (username, password) 
@@ -52,7 +56,11 @@ export const userExists = async (username: string, client?: PoolClient) => {
   }
 };
 
-export const authenticateUser = async (user_id: string, username: string, client?: PoolClient) => {
+export const authenticateUser = async (
+  user_id: string,
+  username: string,
+  client?: PoolClient,
+) => {
   try {
     let result = await (client || pool).query(
       `SELECT 1 FROM users 

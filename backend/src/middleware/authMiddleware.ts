@@ -35,7 +35,6 @@ export const authenticate = async (
   }
 };
 
-
 export const authenticateSocket = async (
   socket: Socket,
   next: (err?: ExtendedError) => void,
@@ -60,4 +59,3 @@ export const authenticateSocket = async (
     return next(err as ExtendedError);
   }
 };
-

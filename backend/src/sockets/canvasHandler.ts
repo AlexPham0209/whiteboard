@@ -8,18 +8,19 @@ const registerCanvasHandlers = (io: Server, socket: Socket) => {
 
       const canvas = await getCanvas(socket.data.room_id);
       socket.emit("update_canvas", canvas);
-    } catch(err) {
+    } catch (err) {
       throw err;
     }
-  })
-  
+  });
+
   socket.on("add_line", async (line: Line) => {
     try {
-      if (!socket.data.room_id || !socket.data.user_id) throw new Error("Invalid user id or room id");
+      if (!socket.data.room_id || !socket.data.user_id)
+        throw new Error("Invalid user id or room id");
 
       await addLine(socket.data.user_id, line);
       socket.broadcast.to(socket.data.room_id).emit("update", line);
-    } catch(err) {
+    } catch (err) {
       throw err;
     }
   });

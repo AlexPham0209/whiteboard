@@ -1,5 +1,5 @@
 // tests/setup-db-hooks.ts
-import { beforeEach, afterEach } from "vitest";
+import { beforeEach, afterEach, afterAll } from "vitest";
 import pool from "../src/db/db.js";
 import { PoolClient } from "pg";
 
@@ -20,4 +20,9 @@ afterEach(async (context) => {
     await context.dbClient.query("ROLLBACK");
     context.dbClient.release();
   }
+});
+
+afterAll(async () => {
+  await pool.query("TRUNCATE TABLE users, rooms, members, lines CASCADE");
+  await pool.end();
 });

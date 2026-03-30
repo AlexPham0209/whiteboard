@@ -23,13 +23,9 @@ io.on("connection", (socket) => {
   registerUserHandlers(io, socket);
   registerMessageHandlers(io, socket);
 
-  socket.on("disconnect", () => {
-
-
-  });
+  socket.on("disconnect", () => {});
 });
 
 server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
 });
-
