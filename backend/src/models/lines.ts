@@ -24,8 +24,8 @@ export const addLine = async (
     );
 
     return result.rows;
-  } catch (e) {
-    console.log(e);
+  } catch (err) {
+    throw err;
   }
 };
 

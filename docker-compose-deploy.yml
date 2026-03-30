@@ -2,6 +2,7 @@ version: "latest"
 services:
   backend:
     build: ./backend
+    image: ${DOCKERHUB_USERNAME}/whiteboard-backend:latest
     environment:
       - SERVER_PORT=${SERVER_PORT}
       - POSTGRES_HOST=${POSTGRES_HOST}
@@ -19,6 +20,7 @@ services:
         condition: service_healthy
 
   frontend:
+    image: ${DOCKERHUB_USERNAME}/whiteboard-frontend:latest
     build:
       context: ./frontend
       args:

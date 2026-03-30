@@ -6,10 +6,10 @@ import type { DB } from "@/utils/types.js";
 export const createUser = async (
   username: string,
   password: string,
-  client?: DB,
+  client: DB = pool,
 ) => {
   try {
-    let result = await (client || pool).query(
+    let result = await client.query(
       `INSERT INTO users (username, password) 
       VALUES ($1, $2)
       RETURNING id`,
@@ -25,9 +25,9 @@ export const createUser = async (
   }
 };
 
-export const getUser = async (username: string, client?: DB) => {
+export const getUser = async (username: string, client: DB = pool) => {
   try {
-    let result = await (client || pool).query(
+    let result = await client.query(
       `SELECT id, password FROM users
       WHERE username=$1`,
       [username],
@@ -42,9 +42,9 @@ export const getUser = async (username: string, client?: DB) => {
   }
 };
 
-export const userExists = async (username: string, client?: DB) => {
+export const userExists = async (username: string, client: DB = pool) => {
   try {
-    let result = await (client || pool).query(
+    let result = await client.query(
       `SELECT 1 FROM users 
       WHERE username=$1 
       LIMIT 1`,
@@ -60,10 +60,10 @@ export const userExists = async (username: string, client?: DB) => {
 export const authenticateUser = async (
   user_id: string,
   username: string,
-  client?: DB,
+  client: DB = pool,
 ) => {
   try {
-    let result = await (client || pool).query(
+    let result = await client.query(
       `SELECT 1 FROM users 
       WHERE id=$1 AND username=$2 
       LIMIT 1`,
@@ -76,9 +76,9 @@ export const authenticateUser = async (
   }
 };
 
-export const removeUser = async (id: string, client?: DB) => {
+export const removeUser = async (id: string, client: DB = pool) => {
   try {
-    await (client || pool).query("DELETE FROM users WHERE id=$1", [id]);
+    await client.query("DELETE FROM users WHERE id=$1", [id]);
   } catch (err) {
     throw err;
   }

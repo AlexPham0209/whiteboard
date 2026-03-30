@@ -7,7 +7,10 @@ import {
   deleteRoom,
   roomExists,
   roomExistsFromCode,
+  getMembersInRoom
 } from "../src/models/rooms.js";
+import { addMember } from "../src/models/members.js";
+import { createUser } from "../src/models/users.js";
 
 const uuidRegex =
   /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-5][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
@@ -50,5 +53,30 @@ describe("Rooms Model Tests", () => {
     const room2 = await createRoom(dbClient);
     expect(room1.id).not.toBe(room2.id);
     expect(room1.room_code).not.toBe(room2.room_code);
+  });
+
+  dbTest("Get members in room", async ({ dbClient }) => { 
+    const { id, room_code } = await createRoom(dbClient);
+    const members = await getMembersInRoom(id, dbClient);
+
+    // Create users and add them to the room
+    const user1 = await createUser("testuser1", "password", dbClient);
+    const user2 = await createUser("testuser2", "password", dbClient);
+    const user3 = await createUser("testuser3", "password", dbClient);
+
+    const member1 = await addMember(user1.id, room_code, dbClient);
+    const member2 = await addMember(user2.id, room_code, dbClient);
+    const member3 = await addMember(user3.id, room_code, dbClient);
+
+    const membersAfter = await getMembersInRoom(id, dbClient);
+
+    expect(membersAfter).toHaveLength(3);
+    expect(membersAfter[0]).toHaveProperty("username", "testuser1");
+    expect(membersAfter[1]).toHaveProperty("username", "testuser2");
+    expect(membersAfter[2]).toHaveProperty("username", "testuser3");
+    
+    expect(membersAfter[0]).toHaveProperty("user_id", user1.id);
+    expect(membersAfter[1]).toHaveProperty("user_id", user2.id);
+    expect(membersAfter[2]).toHaveProperty("user_id", user3.id);
   });
 });

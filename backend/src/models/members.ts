@@ -2,11 +2,15 @@ import AppError from "../utils/error.js";
 import pool from "../db/db.js";
 import type { DB } from "@/utils/types.js";
 
-export const addMember = async (user_id: string, room_code: string, db: DB) => {
+export const addMember = async (
+  user_id: string,
+  room_code: string,
+  client: DB = pool,
+) => {
   if (room_code.length !== 5) throw new Error("Invalid room code");
 
   try {
-    let users = await (db || pool).query(
+    let users = await client.query(
       `INSERT INTO members (user_id, room_id) 
       SELECT $1, rooms.id FROM rooms 
       WHERE rooms.room_code=$2
@@ -23,9 +27,13 @@ export const addMember = async (user_id: string, room_code: string, db: DB) => {
   }
 };
 
-export const memberExists = async (user: string, room: string, db: DB) => {
+export const memberExists = async (
+  user: string,
+  room: string,
+  client: DB = pool,
+) => {
   try {
-    let result = await (db || pool).query(
+    let result = await client.query(
       `SELECT 1 FROM members 
       JOIN rooms ON room_id = rooms.id 
       JOIN users ON user_id = users.id
@@ -42,25 +50,25 @@ export const memberExists = async (user: string, room: string, db: DB) => {
   }
 };
 
-export const removeMember = async (id: string, db: DB) => {
+export const removeMember = async (id: string, client: DB = pool) => {
   try {
-    await (db || pool).query("DELETE FROM members WHERE id=$1", [id]);
+    await client.query("DELETE FROM members WHERE id=$1", [id]);
   } catch (err) {
     throw err;
   }
 };
 
-export const removeAllMembers = async (db: DB) => {
+export const removeAllMembers = async (client: DB = pool) => {
   try {
-    await (db || pool).query("DELETE FROM users", []);
+    await client.query("DELETE FROM users", []);
   } catch (err) {
     throw err;
   }
 };
 
-export const getRoomFromMember = async (id: string, db: DB) => {
+export const getRoomFromMember = async (id: string, client: DB = pool) => {
   try {
-    const result = await (db || pool).query(
+    const result = await client.query(
       `SELECT rooms.id, rooms.room_code FROM rooms 
       JOIN members ON rooms.id = members.room_id 
       WHERE members.id = $1`,
