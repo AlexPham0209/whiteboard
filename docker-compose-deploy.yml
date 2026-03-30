@@ -2,10 +2,18 @@ version: "latest"
 services:
   backend:
     build: ./backend
-    env_file:
-      - ./backend/.env
+    environment:
+      - SERVER_PORT=${SERVER_PORT}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - SECRET=${SECRET}
+      - SALT_ROUNDS=${SALT_ROUNDS}
     ports:
-      - 3000:3000
+      - ${SERVER_PORT}:${SERVER_PORT}
     depends_on:
       db:
         condition: service_healthy
@@ -15,7 +23,7 @@ services:
       context: ./frontend
       args:
         - NODE_ENV=${NODE_ENV}
-        - VITE_SERVER_PORT=${VITE_SERVER_PORT}
+        - VITE_SERVER_PORT=${SERVER_PORT}
     ports:
       - 2094:2094
     depends_on:
@@ -31,7 +39,8 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
     ports:
-      - 5432:5432
+      - ${POSTGRES_PORT}:5432
+    restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 2s
