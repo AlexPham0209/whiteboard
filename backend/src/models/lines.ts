@@ -28,10 +28,9 @@ export const addLine = async (
       [line.draw_mode, line.color, line.brush_size, line.points, user_id],
     );
 
-    if (result.rows.length === 0) {
+    if (result.rows.length === 0) 
       throw new AppError("Unable to add line. User may not be a member of any room.", 403);
-    }
-
+    
     return result.rows;
   } catch (err: any) {
     if (err instanceof AppError) throw err;
