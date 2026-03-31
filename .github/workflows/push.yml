@@ -5,7 +5,7 @@ jobs:
   push:
     name: Push Docker Images
     runs-on: ubuntu-latest
-    environment: test
+    environment: production
 
     steps:
       - uses: actions/checkout@v4
@@ -32,7 +32,21 @@ jobs:
           docker compose -f docker-compose-deploy.yml build
           docker compose -f docker-compose-deploy.yml push
         env:
+          NODE_ENV: production
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          
+          SERVER_PORT: ${{ vars.SERVER_PORT }}
+          CLIENT_PORT: ${{ vars.CLIENT_PORT }}
+          CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
+
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PORT: ${{ vars.POSTGRES_PORT }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          
+          SECRET: ${{ secrets.SECRET }}
+          SALT_ROUNDS: ${{ vars.SALT_ROUNDS }}
 
 
 
