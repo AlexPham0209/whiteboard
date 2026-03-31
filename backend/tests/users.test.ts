@@ -23,7 +23,9 @@ describe("Users Model Tests", () => {
       await createUser("Alex", "password123", dbClient);
       await createUser("Alex", "password123", dbClient);
     } catch (err) {
-      expect(err).toBeInstanceOf(Error);
+      expect(err).toBeInstanceOf(AppError);
+      expect(err).toHaveProperty("message", "Username is already taken");
+      expect(err).toHaveProperty("status", 409);
     }
   });
 
@@ -83,7 +85,9 @@ describe("Users Model Tests", () => {
     try {
       await removeUser("dd9f9cf0-61b1-4a97-9e15-a9d59fbefa95", dbClient);
     } catch (err) {
-      expect(err).toBeInstanceOf(Error);
+      expect(err).toBeInstanceOf(AppError);
+      expect(err).toHaveProperty("message", "User not found");
+      expect(err).toHaveProperty("status", 404);
     }
   });
 });

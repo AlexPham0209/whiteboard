@@ -7,7 +7,7 @@ import {
   deleteRoom,
   roomExists,
   roomExistsFromCode,
-  getMembersInRoom
+  getMembersInRoom,
 } from "../src/models/rooms.js";
 import { addMember } from "../src/models/members.js";
 import { createUser } from "../src/models/users.js";
@@ -44,7 +44,9 @@ describe("Rooms Model Tests", () => {
     try {
       await deleteRoom("dd9f9cf0-61b1-4a97-9e15-a9dfdfbefa95", dbClient);
     } catch (err) {
-      expect(err).toBeInstanceOf(Error);
+      expect(err).toBeInstanceOf(AppError);
+      expect(err).toHaveProperty("message", "Room not found");
+      expect(err).toHaveProperty("status", 404);
     }
   });
 
@@ -55,7 +57,7 @@ describe("Rooms Model Tests", () => {
     expect(room1.room_code).not.toBe(room2.room_code);
   });
 
-  dbTest("Get members in room", async ({ dbClient }) => { 
+  dbTest("Get members in room", async ({ dbClient }) => {
     const { id, room_code } = await createRoom(dbClient);
     const members = await getMembersInRoom(id, dbClient);
 
@@ -74,7 +76,7 @@ describe("Rooms Model Tests", () => {
     expect(membersAfter[0]).toHaveProperty("username", "testuser1");
     expect(membersAfter[1]).toHaveProperty("username", "testuser2");
     expect(membersAfter[2]).toHaveProperty("username", "testuser3");
-    
+
     expect(membersAfter[0]).toHaveProperty("user_id", user1.id);
     expect(membersAfter[1]).toHaveProperty("user_id", user2.id);
     expect(membersAfter[2]).toHaveProperty("user_id", user3.id);

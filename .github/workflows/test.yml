@@ -21,7 +21,7 @@ jobs:
           ./scripts/test.sh
         env:
           NODE_ENV: testing
-          
+
           SERVER_PORT: ${{ vars.SERVER_PORT }}
           CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
           SALT_ROUNDS: ${{ vars.SALT_ROUNDS }}
