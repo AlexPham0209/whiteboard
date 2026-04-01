@@ -9,17 +9,17 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
 
       if (!exists) throw new Error("Room doesn't exist");
 
-      if (!socket.data.username) throw new Error("Invalid username");
+      if (!socket.data.username) throw new Error("Missing username");
 
-      const { member_id, room_id } = await addMember(
+      const { id, room_id } = await addMember(
         socket.data.username,
         room_code,
       );
 
-      socket.data.member_id = member_id;
+      socket.data.member_id = id;
       socket.data.room_id = room_id;
       socket.join(socket.data.room_id);
-
+      
       const members = await getMembersInRoom(socket.data.room_id);
       socket.broadcast.to(socket.data.room_id).emit("update_members", members);
     } catch (err) {

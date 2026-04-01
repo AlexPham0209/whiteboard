@@ -22,7 +22,7 @@ CREATE TABLE users (
 -- Members
 CREATE TABLE members (
     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(), 
-    user_id uuid NOT NULL,
+    user_id uuid NOT NULL UNIQUE,
     room_id uuid NOT NULL,
     joined_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
@@ -32,8 +32,6 @@ CREATE TABLE members (
     CONSTRAINT fk_room 
         FOREIGN KEY (room_id) REFERENCES rooms(id)
         ON DELETE CASCADE,
-
-    UNIQUE (user_id, room_id)
 );
 
 CREATE INDEX idx_members_user_id ON members (user_id);
