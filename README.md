@@ -2,29 +2,32 @@
 
 Whiteboard is a website where users can draw anything on a virtual whiteboard!
 
-* Join and create private rooms!
-* Draw with three colors: black, red, and blue.
-* Draw to your heart's desire!
+- Join and create private rooms!
+- Draw with three colors: black, red, and blue.
+- Draw to your heart's desire!
 
 ![Draw](images/draw.gif)
 
 ## Creating a room
-* Start server
-* Go to localhost:2094/create
-* Enter your username and click join
+
+- Start server
+- Go to localhost:2094/create
+- Enter your username and click join
 
 ![Create](images/create.gif)
 
 ## Joining a room
-* Got to localhost:2094/join
-* Get room code from your friend
-* Enter your username and room code
-* Click join
+
+- Got to localhost:2094/join
+- Get room code from your friend
+- Enter your username and room code
+- Click join
 
 ![Join](images/join.gif)
 
 ## Stack
-For the frontend, we are using the React Framework along with several libraries such as Konva and Materia UI. 
+
+For the frontend, we are using the React Framework along with several libraries such as Konva and Materia UI.
 
 For the backend, we are using Express.js along with Socket.io for realtime communication between different users.
 
@@ -33,8 +36,57 @@ Finally, we are using PostgreSQL to store data room information and line data.
 ![Diagram showing how each component in stack communicates](images/whiteboard-diagram.png)
 
 ## Database
+
 ![Database Schema](images/drawSQL-image-export-2026-02-08.png)
 
 ## Images
 
 This project utilizes two Docker images: a Node.js base image for both the frontend and backend, and a PostgreSQL base image for the database.
+
+### Backend
+
+```
+FROM node:22.13.1 # Uses Node.js base image
+
+WORKDIR /app # Set working directory to the app directory
+COPY package*.json . # Copy package.json and package-lock.json into app directory of the container
+
+RUN npm install # Install all dependencies using package.json
+COPY . . # Copy all code and files (except those in .dockerignore) into working directory
+EXPOSE 3000 # Exposes port 3000
+
+CMD ["npm", "run", "start"] # On docker run, run the backend server
+```
+
+I chose the Node base image because my backend is a Node.js application.
+
+### Frontend
+
+```
+FROM node:22.13.0 # Uses Node.js base image
+
+WORKDIR /app # Set working directory to the app directory
+
+ARG NODE_ENV # Create argument for the current environment: Production and Dev
+ARG VITE_SERVER_PORT # Create argument for the port for the frontend server
+
+ENV NODE_ENV = ${NODE_ENV} # Set NODE_ENV environment variable to argument variable
+ENV VITE_SERVER_PORT=${VITE_SERVER_PORT} # Set NODE_ENV environment variable to argument variable
+
+COPY package*.json . # Copy package.json and package-lock.json into app directory of the container
+
+RUN npm install --legacy-peer-deps # Installs all dependencies using package.json (including legacy dependencies)
+COPY . . # Copy all code and files (except those in .dockerignore) into working directory
+EXPOSE 2094 # Expose port 2094
+RUN npm run build # Builds the server
+
+CMD ["npm", "run", "preview"] # On docker run, run the frontend server
+```
+
+I chose the Node base image for my frontend because my frontend is a Vite React App.
+
+## Networking
+
+The PostgreSQL database server is accessible to every service in stack using DNS resolution by container name.
+
+The frontend and the backend are both exposed to the internet. So, the frontend is able to communicate with the backend using HTTP requests and socket events.

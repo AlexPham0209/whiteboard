@@ -182,9 +182,9 @@ function Whiteboard() {
         setColor={setColor}
         setBrushSize={setBrushSize}
       />
-      
+
       <UserList users={users} />
-      
+
       <Stage
         ref={stageRef}
         width={stageWidth}

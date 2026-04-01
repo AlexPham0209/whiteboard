@@ -1,0 +1,53 @@
+version: "latest"
+services:
+  backend:
+    build: ./backend
+    image: ${DOCKERHUB_USERNAME}/whiteboard-backend:latest
+    environment:
+      - SERVER_PORT=${SERVER_PORT}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - CORS_ORIGINS=${CORS_ORIGINS}
+      - SECRET=${SECRET}
+      - SALT_ROUNDS=${SALT_ROUNDS}
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: ${DOCKERHUB_USERNAME}/whiteboard-frontend:latest
+    build:
+      context: ./frontend
+      args:
+        - NODE_ENV=${NODE_ENV}
+        - VITE_SERVER_PORT=${SERVER_PORT}
+    ports:
+      - 2094:2094
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:16-alpine
+    volumes:
+      - whiteboard-data:/var/lib/postgresql
+      - ./data/schema.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+    ports:
+      - ${POSTGRES_PORT:-5432}:5432
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 2s
+      timeout: 2s
+      retries: 10
+
+volumes:
+  whiteboard-data:

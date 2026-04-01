@@ -1,48 +1,32 @@
-import { useEffect, useState } from "react";
-import { socket, connect } from "../socket";
 import axios from "axios";
+import { useState } from "react";
 
-export default function Join({
+export default function SignUp({
   setJoined,
 }: {
   setJoined: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const [userName, setUserName] = useState<string>("");
-  const [roomCode, setRoomCode] = useState<string>("");
-
-  useEffect(() => {
-    const connectError = (err: Error) => {
-      console.log(`error due to ${err.message}`);
-      setJoined(false);
-      setUserName("");
-      setRoomCode("");
-    };
-
-    socket.on("connect_error", connectError);
-    return () => {
-      socket.off("update_canvas", connectError);
-    };
-  }, []);
+  const [password, setPassword] = useState<string>("");
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     axios
-      .post("http://localhost:3000/join", {
+      .post("http://localhost:3000/auth/login", {
         username: userName,
-        room_code: roomCode,
+        password: password,
         validateStatus: (status: number) => {
-          return status < 500;
+          return status < 400;
         },
       })
       .then((res) => {
-        sessionStorage.setItem("token", res.data);
-        connect();
+        sessionStorage.setItem("token", res.data.token);
+        setJoined(true);
       })
       .catch((err) => {
         console.log(err.response.data.message);
-        setJoined(false);
         setUserName("");
-        setRoomCode("");
+        setPassword("");
       });
   };
 
@@ -51,9 +35,9 @@ export default function Join({
     setUserName((e.target as HTMLInputElement).value);
   };
 
-  const onRoomCodeChange = (e: React.FormEvent<HTMLInputElement>) => {
+  const onPasswordChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault();
-    setRoomCode((e.target as HTMLInputElement).value);
+    setPassword((e.target as HTMLInputElement).value);
   };
 
   return (
@@ -72,13 +56,13 @@ export default function Join({
           type="text"
         />
         <input
-          name="room-code"
-          value={roomCode}
-          onChange={onRoomCodeChange}
+          name="password"
+          value={password}
+          onChange={onPasswordChange}
           required={true}
-          placeholder="Room Code"
+          placeholder="Password"
           className="border-2 border-gray-300 rounded-2xl w-50 h-12 text-center"
-          type="text"
+          type="password"
         />
         <button
           type="submit"
