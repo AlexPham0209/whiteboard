@@ -3,18 +3,16 @@ import { socket, connect } from "../socket";
 import axios from "axios";
 
 export default function Join({
-  setJoined,
+  setJoinedRoom,
 }: {
-  setJoined: React.Dispatch<React.SetStateAction<boolean>>;
+  setJoinedRoom: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
-  const [userName, setUserName] = useState<string>("");
   const [roomCode, setRoomCode] = useState<string>("");
 
   useEffect(() => {
     const connectError = (err: Error) => {
       console.log(`error due to ${err.message}`);
-      setJoined(false);
-      setUserName("");
+      setJoinedRoom(false);
       setRoomCode("");
     };
 
@@ -22,13 +20,12 @@ export default function Join({
     return () => {
       socket.off("update_canvas", connectError);
     };
-  }, []);
+  }, [setJoinedRoom]);
 
   const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     axios
       .post("http://localhost:3000/join", {
-        username: userName,
         room_code: roomCode,
         validateStatus: (status: number) => {
           return status < 500;
@@ -40,8 +37,6 @@ export default function Join({
       })
       .catch((err) => {
         console.log(err.response.data.message);
-        setJoined(false);
-        setUserName("");
         setRoomCode("");
       });
   };

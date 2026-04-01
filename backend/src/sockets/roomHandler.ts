@@ -3,29 +3,36 @@ import { getMembersInRoom, roomExists } from "../models/rooms.js";
 import type { Server, Socket } from "socket.io";
 
 const registerRoomHandlers = (io: Server, socket: Socket) => {
-  socket.on("join_room", async (room_code: string) => {
-    try {
-      const exists = await roomExists(room_code);
+  socket.on(
+    "join_room",
+    async (
+      room_code: string,
+      callback: (response: { success: boolean; message?: string }) => void,
+    ) => {
+      try {
+        if (!socket.data.user_id) throw new Error("Missing user ID");
 
-      if (!exists) throw new Error("Room doesn't exist");
+        const { id, room_id } = await addMember(
+          socket.data.user_id,
+          room_code,
+        );
 
-      if (!socket.data.username) throw new Error("Missing username");
+        socket.data.member_id = id;
+        socket.data.room_id = room_id;
+        socket.join(socket.data.room_id);
 
-      const { id, room_id } = await addMember(
-        socket.data.username,
-        room_code,
-      );
-
-      socket.data.member_id = id;
-      socket.data.room_id = room_id;
-      socket.join(socket.data.room_id);
-      
-      const members = await getMembersInRoom(socket.data.room_id);
-      socket.broadcast.to(socket.data.room_id).emit("update_members", members);
-    } catch (err) {
-      throw err;
-    }
-  });
+        const members = await getMembersInRoom(socket.data.room_id);
+        socket.broadcast
+          .to(socket.data.room_id)
+          .emit("update_members", members);
+        callback({ success: true, message: "Joined room successfully" });
+      } catch (err) {
+        if (err instanceof Error)
+          callback({ success: false, message: err.message });
+        else callback({ success: false, message: "An unknown error occurred" });
+      }
+    },
+  );
 
   socket.on("leave_room", async () => {
     try {

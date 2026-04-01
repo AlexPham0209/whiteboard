@@ -23,7 +23,7 @@ export const addMember = async (
     // If result is empty, it means the room_code didn't match any room
     if (result.rows.length === 0)
       throw new AppError("Room not found or unable to join", 404);
-    
+
     return result.rows[0];
   } catch (err: any) {
     if (err instanceof AppError) throw err;

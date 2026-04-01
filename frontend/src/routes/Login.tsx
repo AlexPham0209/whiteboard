@@ -1,33 +1,34 @@
 import axios from "axios";
 import { useState } from "react";
+import { handleError } from "../utils";
 
-export default function SignUp({
-  setJoined,
-}: {
-  setJoined: React.Dispatch<React.SetStateAction<boolean>>;
-}) {
+export default function Login({ setLoggedIn }: { setLoggedIn: (joined: boolean) => void }) {
   const [userName, setUserName] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [, setError] = useState<string>("");
 
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    axios
-      .post("http://localhost:3000/auth/login", {
+
+    try {
+      const response = await axios.post("http://localhost:3000/auth/login", {
         username: userName,
         password: password,
         validateStatus: (status: number) => {
           return status < 400;
         },
-      })
-      .then((res) => {
-        sessionStorage.setItem("token", res.data.token);
-        setJoined(true);
-      })
-      .catch((err) => {
-        console.log(err.response.data.message);
-        setUserName("");
-        setPassword("");
       });
+
+      if (!response.data.success) throw new Error("Login failed");
+      sessionStorage.setItem("token", response.data.token);
+      console.log("Login successful, token stored");
+      setLoggedIn(true);
+
+    } catch (error) {
+      setUserName("");
+      setPassword("");
+      handleError(error, setError);
+    }
   };
 
   const onUserNameChange = (e: React.FormEvent<HTMLInputElement>) => {

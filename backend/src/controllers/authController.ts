@@ -40,7 +40,12 @@ export const register = async (
       { expiresIn: "1h" },
     );
 
-    res.status(201).json({ success: true, token: token });
+    res.cookie("sessionToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 1000, // 1 hour
+    });
+    res.status(200).json({ success: true, token: token });
   } catch (err) {
     return next(err);
   }
@@ -62,7 +67,7 @@ export const login = async (
     const result = await getUser(username);
     const user_id = result.id;
     const hashed_password = result.password;
-
+      
     const same = await bcrypt.compare(password, hashed_password);
 
     if (same) {

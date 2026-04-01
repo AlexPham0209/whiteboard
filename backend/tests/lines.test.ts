@@ -25,13 +25,13 @@ describe("Lines Model Tests", () => {
 
     const users = await createUser("testuser", "password123", dbClient);
     const member = await addMember(users.id, room_code, dbClient);
-    
+
     const line: Line = {
-        draw_mode: "draw",
-        color: "black",
-        brush_size: 5,
-        points: [0.1, 0.2, 0.3, 0.4]
-    }
+      draw_mode: "draw",
+      color: "black",
+      brush_size: 5,
+      points: [0.1, 0.2, 0.3, 0.4],
+    };
 
     const result = await addLine(users.id, line, dbClient);
     expect(result).toHaveLength(1);
@@ -41,29 +41,31 @@ describe("Lines Model Tests", () => {
     expect(result[0]).toHaveProperty("brush_size", line.brush_size);
     expect(result[0]).toHaveProperty("points");
     expect(result[0].points).toEqual(line.points);
-    }
-  );
+  });
 
   dbTest("Add line with non-member user", async ({ dbClient }) => {
     const room1 = await createRoom(dbClient);
     const users = await createUser("testuser", "password123", dbClient);
-    
+
     const line: Line = {
-        draw_mode: "draw",
-        color: "black",
-        brush_size: 5,
-        points: [0.1, 0.2, 0.3, 0.4]
-    }
+      draw_mode: "draw",
+      color: "black",
+      brush_size: 5,
+      points: [0.1, 0.2, 0.3, 0.4],
+    };
     try {
-        const result = await addLine(users.id, line, dbClient);
+      const result = await addLine(users.id, line, dbClient);
     } catch (err) {
-        expect(err).toBeInstanceOf(AppError);
-        expect(err).toHaveProperty("message", "Unable to add line. User may not be a member of any room.");
-        expect(err).toHaveProperty("status", 403);
+      expect(err).toBeInstanceOf(AppError);
+      expect(err).toHaveProperty(
+        "message",
+        "Unable to add line. User may not be a member of any room.",
+      );
+      expect(err).toHaveProperty("status", 403);
     }
   });
-  
-  dbTest("Get all lines in current room", async({ dbClient }) => {
+
+  dbTest("Get all lines in current room", async ({ dbClient }) => {
     const room1 = await createRoom(dbClient);
     const room2 = await createRoom(dbClient);
 
@@ -78,11 +80,11 @@ describe("Lines Model Tests", () => {
     const member4 = await addMember(user4.id, room2.room_code, dbClient);
 
     const line: Line = {
-        draw_mode: "draw",
-        color: "black",
-        brush_size: 5,
-        points: [0.1, 0.2, 0.3, 0.4]
-    }
+      draw_mode: "draw",
+      color: "black",
+      brush_size: 5,
+      points: [0.1, 0.2, 0.3, 0.4],
+    };
 
     const result1 = await addLine(user1.id, line, dbClient);
     const result2 = await addLine(user2.id, line, dbClient);

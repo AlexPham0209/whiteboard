@@ -11,11 +11,7 @@ export interface Line {
   points: number[];
 }
 
-export const addLine = async (
-  user_id: string,
-  line: Line,
-  db: DB = pool,
-) => {
+export const addLine = async (user_id: string, line: Line, db: DB = pool) => {
   try {
     // BUG FIX: Changed WHERE members.user_id=$1 to $5
     // $1 is draw_mode, $5 is user_id
@@ -28,15 +24,20 @@ export const addLine = async (
       [line.draw_mode, line.color, line.brush_size, line.points, user_id],
     );
 
-    if (result.rows.length === 0) 
-      throw new AppError("Unable to add line. User may not be a member of any room.", 403);
-    
+    if (result.rows.length === 0)
+      throw new AppError(
+        "Unable to add line. User may not be a member of any room.",
+        403,
+      );
+
     return result.rows;
   } catch (err: any) {
     if (err instanceof AppError) throw err;
     // Handle specific foreign key or data type errors
-    if (err.code === '23503') throw new AppError("Room or User no longer exists", 404);
-    if (err.code === '22P02') throw new AppError("Invalid data format for line points", 400);
+    if (err.code === "23503")
+      throw new AppError("Room or User no longer exists", 404);
+    if (err.code === "22P02")
+      throw new AppError("Invalid data format for line points", 400);
     throw err;
   }
 };
@@ -53,7 +54,7 @@ export const getCanvas = async (room_id: string, db: DB = pool) => {
 
     return result.rows as Line[];
   } catch (err: any) {
-    if (err.code === '22P02') throw new AppError("Invalid room ID format", 400);
+    if (err.code === "22P02") throw new AppError("Invalid room ID format", 400);
     throw err;
   }
 };

@@ -1,50 +1,54 @@
 import axios from "axios";
-import { connect, socket } from "../socket";
-import { useEffect, useState } from "react";
+import { socket } from "../socket";
+import { useState } from "react";
+import { handleError } from "../utils";
 
-export default function Create({
-  setJoined,
-}: {
-  setJoined: React.Dispatch<React.SetStateAction<boolean>>;
-}) {
-  const [userName, setUserName] = useState<string>("");
+export default function Create({ setJoinedRoom }: { setJoinedRoom: (joined: boolean) => void }) {
+  const [roomName, setRoomName] = useState<string>("");
+  const [, setError] = useState<string>("");
 
-  useEffect(() => {
-    const connectError = (err: Error) => {
-      console.log(`error due to ${err.message}`);
-      setJoined(false);
-      setUserName("");
-    };
-
-    socket.on("connect_error", connectError);
-    return () => {
-      socket.off("update_canvas", connectError);
-    };
-  }, []);
-
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    axios
-      .post("http://localhost:3000/create", {
-        username: userName,
-        validateStatus: (status: number) => {
-          return status < 500;
+    try {
+      // Creating room
+      console.log("Creating room...");
+      const response = await axios.post("http://localhost:3000/api/create", {}, {
+        headers: {
+          Authorization: `Bearer ${sessionStorage.getItem("token")}`,
         },
-      })
-      .then((res) => {
-        sessionStorage.setItem("token", res.data);
-        connect();
-      })
-      .catch((err) => {
-        console.log(err.response.data.message);
-        setJoined(false);
-        setUserName("");
+
+        validateStatus: (status: number) => {
+          return status < 400;
+        },
       });
+      
+      if (!response.data.success) throw new Error("Unauthorized");
+      if (!response.data.room_code) throw new Error("Room code not received");
+      
+      console.log("Room created successfully, code: " + response.data.room_code);
+      
+      // Ensures users is connected
+      if (!socket.connected) throw new Error("Socket is not connected");
+        
+      // Join room after creating
+      socket.emit("join_room", response.data.room_code, (res: { success: boolean; message?: string }) => {
+        if (!res.success) {
+          handleError(new Error(res.message || "Failed to join room"), setError);
+          return;
+        }
+        
+        console.log("Joined room successfully after creation");
+        setJoinedRoom(true);
+      });
+
+    } catch (error) {
+      handleError(error, setError);
+    }
   };
 
-  const onUserNameChange = (e: React.FormEvent<HTMLInputElement>) => {
+  const onRoomNameChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault();
-    setUserName((e.target as HTMLInputElement).value);
+    setRoomName((e.target as HTMLInputElement).value);
   };
 
   return (
@@ -54,11 +58,11 @@ export default function Create({
         className="w-1/4 h-1/3 min-w-80 min-h-60 bg-white rounded-2xl shadow-xl p-2 flex flex-col items-center justify-evenly"
       >
         <input
-          name="username"
-          value={userName}
-          onChange={onUserNameChange}
+          name="Room Name"
+          value={roomName}
+          onChange={onRoomNameChange}
           required={true}
-          placeholder="Username"
+          placeholder="Room Name"
           className="border-2 border-gray-300 rounded-2xl w-50 h-12 text-center"
           type="text"
         />

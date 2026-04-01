@@ -78,7 +78,7 @@ export const getMembersInRoom = async (room_id: string, client: DB = pool) => {
   } catch (err: any) {
     // Handle malformed UUIDs for room_id
     if (err.code === "22P02") throw new AppError("Invalid room ID format", 400);
-    
+
     throw err;
   }
 };
