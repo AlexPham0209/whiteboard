@@ -31,7 +31,7 @@ CREATE TABLE members (
     
     CONSTRAINT fk_room 
         FOREIGN KEY (room_id) REFERENCES rooms(id)
-        ON DELETE CASCADE,
+        ON DELETE CASCADE
 );
 
 CREATE INDEX idx_members_user_id ON members (user_id);
