@@ -21,7 +21,7 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
 
       const members = await getMembersInRoom(socket.data.room_id);
       socket.broadcast.to(socket.data.room_id).emit("update_members", members);
-
+      
       callback({ success: true, message: "Joined room successfully" });
       socket.emit("on_room_connect");
     } catch (err) {

@@ -36,7 +36,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
           },
         },
       );
-
+      
       if (!response.data.success) throw new Error("Unauthorized");
       if (!response.data.room_code) throw new Error("Room code not received");
 
