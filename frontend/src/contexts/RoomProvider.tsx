@@ -80,10 +80,15 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   useEffect(() => {
-    socket.on("connect", () => {
-      if (roomCode) joinRoom(roomCode);
-    });
+    const onConnect = () => {
+      if (roomCode) 
+        joinRoom(roomCode);
+    };
 
+    if (socket.connected)
+      onConnect();
+    
+    socket.on("connect", onConnect);
     return () => {
       socket.off("connect");
     };

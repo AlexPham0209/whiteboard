@@ -1,3 +1,4 @@
+import { getCanvas } from "@/models/lines.js";
 import { addMember, getMember, removeMember } from "../models/members.js";
 import { getMembersInRoom, roomExists } from "../models/rooms.js";
 import type { Server, Socket } from "socket.io";
@@ -14,16 +15,26 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
       const { id, room_id } =
         (await getMember(userId)) ?? (await addMember(userId, room_code));
 
+      if (!room_id) throw new Error("Invalid Room ID");
+
       socket.data.member_id = id;
       socket.data.room_id = room_id;
       socket.data.room_code = room_code;
       socket.join(socket.data.room_id);
-
+      
+      // Retrieving necessary resources
       const members = await getMembersInRoom(socket.data.room_id);
+      const lines = await getCanvas(room_id);
+      
+      // Update members list for all members in room
       socket.broadcast.to(socket.data.room_id).emit("update_members", members);
       
       callback({ success: true, message: "Joined room successfully" });
-      socket.emit("on_room_connect");
+      socket.emit("init_state", {
+        lines: lines,
+        members: members,
+        code: room_code
+      });
     } catch (err) {
       if (err instanceof Error)
         callback({ success: false, message: err.message });

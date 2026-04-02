@@ -25,7 +25,7 @@ function Whiteboard() {
   const [brushSize, setBrushSize] = useState<number>(5);
   const [lines, setLines] = useState<Line[]>([]);
   const [currentLine, setCurrentLine] = useState<Line>();
-  const [roomCode, setRoomCode] = useState<string>("ABCDE");
+  const [roomCode, setRoomCode] = useState<string>("");
   const [users, setUsers] = useState<User[]>([]);
 
   // Object references
@@ -77,17 +77,17 @@ function Whiteboard() {
       setUsers(users);
     };
 
-    const onRoomConnect = () => {
-      socket.emit("get_canvas");
-      socket.emit("get_code");
-      socket.emit("get_members");
+    const onInitState = (data: { lines: Line[]; code: string; members: { username: string; joined_at: string; }[]; }) => {
+      onUpdateCanvas(data.lines);
+      onUpdateCode(data.code);
+      onUpdateUsers(data.members);
     };
     
     socket.on("update", onUpdate);
     socket.on("update_canvas", onUpdateCanvas);
     socket.on("update_code", onUpdateCode);
     socket.on("update_users", onUpdateUsers);
-    socket.on("on_room_connect", onRoomConnect);
+    socket.on("init_state", onInitState);
 
     return () => {
       socket.off("update_canvas", onUpdateCanvas);
