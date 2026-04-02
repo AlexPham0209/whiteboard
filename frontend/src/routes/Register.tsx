@@ -1,39 +1,19 @@
-import axios from "axios";
 import { useState } from "react";
-import { handleError } from "../utils";
+import { useAuth } from "../contexts/AuthContext";
 
-export default function Register({ setLoggedIn }: { setLoggedIn: (joined: boolean) => void }) {
-  const [userName, setUserName] = useState<string>("");
+export default function Register() {
+  const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const [, setError] = useState<string>("");
-
+  const { register } = useAuth();
+  
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    try {
-      const response = await axios.post("http://localhost:3000/auth/register", {
-        username: userName,
-        password: password,
-        validateStatus: (status: number) => {
-          return status < 400;
-        },
-      });
-
-      if (!response.data.success) throw new Error("Registration failed");
-      sessionStorage.setItem("token", response.data.token);
-      console.log("Registration successful, token stored");
-      setLoggedIn(true);
-
-    } catch (error) {
-      setUserName("");
-      setPassword("");
-      handleError(error, setError);
-    }
+    register(username, password);
   };
 
   const onUserNameChange = (e: React.FormEvent<HTMLInputElement>) => {
     e.preventDefault();
-    setUserName((e.target as HTMLInputElement).value);
+    setUsername((e.target as HTMLInputElement).value);
   };
 
   const onPasswordChange = (e: React.FormEvent<HTMLInputElement>) => {
@@ -49,7 +29,7 @@ export default function Register({ setLoggedIn }: { setLoggedIn: (joined: boolea
       >
         <input
           name="username"
-          value={userName}
+          value={username}
           onChange={onUserNameChange}
           required={true}
           placeholder="Username"

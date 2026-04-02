@@ -1,23 +1,25 @@
 import { createContext, useContext } from "react";
-// import { useNavigate } from "react-router-dom";
 
 interface AuthProps {
-    token: string | undefined,
-    isAuthenticated: false,
-    login(): void,
-    logout() :void,
+    user: string,
+    token: string | null,
+    error: string,
+    isAuthenticated: boolean,
+    login(username: string, password: string): void,
+    register(username: string, password: string): void,
+    logout(): void,
 }
 
-const AuthContext = createContext<AuthProps>({
-    token: undefined,
+export const AuthContext = createContext<AuthProps>({
+    user: "",
+    token: null,
+    error: "",
     isAuthenticated: false,
-    login: () => {},
-    logout: () => {}
+    login: async () => {},
+    register: async () => {},
+    logout: async () => {}
 }); 
 
-// const AuthProvider = ({ children }: { children: React.ReactNode}) => {
-    
-// };
 
 export const useAuth = () => {
     return useContext(AuthContext);
