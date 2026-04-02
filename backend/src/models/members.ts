@@ -23,7 +23,7 @@ export const addMember = async (
     // If result is empty, it means the room_code didn't match any room
     if (result.rows.length === 0)
       throw new AppError("Room not found or unable to join", 404);
-    
+
     return result.rows[0];
   } catch (err: any) {
     if (err instanceof AppError) throw err;
@@ -37,6 +37,23 @@ export const addMember = async (
       throw new AppError("Invalid user identification", 400);
 
     throw new AppError("Failed to add member to room", 500);
+  }
+};
+
+export const getMember = async (user_id: string, client: DB = pool) => {
+  try {
+    const result = await client.query(
+      `SELECT id, room_id FROM members
+      WHERE members.user_id=$1`,
+      [user_id],
+    );
+
+    // If result is empty, it means the room_code didn't match any room
+    if (result.rowCount === 0) return null;
+
+    return result.rows[0];
+  } catch (err: any) {
+    throw err;
   }
 };
 
@@ -59,7 +76,6 @@ export const memberExists = async (
 
 export const removeMember = async (id: string, client: DB = pool) => {
   const result = await client.query("DELETE FROM members WHERE id = $1", [id]);
-  if (result.rowCount === 0) throw new AppError("Member record not found", 404);
 };
 
 export const removeAllMembers = async (client: DB = pool) => {

@@ -31,6 +31,7 @@ export const authenticate = async (
 
     next();
   } catch (err) {
+    console.log(err);
     return next(err);
   }
 };
@@ -40,12 +41,13 @@ export const authenticateSocket = async (
   next: (err?: ExtendedError) => void,
 ) => {
   const token = socket.handshake.auth.token;
-
   if (!token) return next(new Error("Missing token"));
 
   try {
     const decoded = jwt.verify(token, SECRET) as JwtPayload;
     const { userId, username } = decoded.data;
+
+    console.log("Decoded token data:", { userId, username });
 
     if (!userId || !username) return next(new Error("Missing token data"));
 

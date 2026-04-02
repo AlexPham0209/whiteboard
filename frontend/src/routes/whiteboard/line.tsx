@@ -4,6 +4,7 @@ export type DrawMode = "draw" | "erase";
 export type Color = "red" | "blue" | "black";
 
 export interface Line {
+  user_id: string | undefined;
   draw_mode: DrawMode;
   color: Color;
   brush_size: number;

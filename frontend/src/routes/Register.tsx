@@ -1,14 +1,14 @@
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 
-export default function Login() {
+export default function Register() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
-  const { login } = useAuth();
+  const { register } = useAuth();
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
-    login(username, password);
+    register(username, password);
   };
 
   return (

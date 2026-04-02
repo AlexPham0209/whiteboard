@@ -1,71 +1,102 @@
-// import { useEffect, useState } from "react";
-// import { socket, connect } from "./socket";
-// import Whiteboard from "./routes/whiteboard/Whiteboard";
-// import Join from "./routes/Join";
+import { type ReactNode } from "react";
 import {
   BrowserRouter,
   Navigate,
   Route,
   Routes,
   useLocation,
-  // useNavigate,
 } from "react-router-dom";
-// import Create from "./routes/Create";
-import SignUp from "./routes/Signup";
+
+// Socket & Contexts
+import { AuthProvider } from "./contexts/AuthProvider";
+import { useAuth } from "./contexts/AuthContext";
+import { RoomProvider } from "./contexts/RoomProvider";
+import { useRoom } from "./contexts/RoomContext";
+
+// Components
+import Register from "./routes/Register";
 import Login from "./routes/Login";
-import { useEffect, useState } from "react";
-import axios from "axios";
+import Create from "./routes/Create";
+import Whiteboard from "./routes/whiteboard/Whiteboard";
+
+/**
+ * Higher-Order Components for Route Protection
+ */
+const ProtectedRoute = ({ children }: { children: ReactNode }) => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
+};
+
+const GuestRoute = ({ children }: { children: ReactNode }) => {
+  const { isAuthenticated } = useAuth();
+  return !isAuthenticated ? children : <Navigate to="/create" replace />;
+};
+
+const RoomRoute = ({ children }: { children: ReactNode }) => {
+  const { isRoomJoined } = useRoom();
+  // If authenticated but no room, send to create.
+  // (Assuming ProtectedRoute handles the auth part)
+  return isRoomJoined ? children : <Navigate to="/create" replace />;
+};
 
 function Pages() {
   const location = useLocation();
-  const [joined, setJoined] = useState(false);
-
-  useEffect(() => {
-    if (!joined) return;
-
-    const config = {
-      headers: {
-        Authorization: "Bearer " + sessionStorage.getItem("token"),
-      },
-    };
-
-    axios
-      .post(
-        "http://localhost:3000/api/test",
-        {
-          validateStatus: (status: number) => {
-            return status < 500;
-          },
-        },
-        config,
-      )
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((err) => {
-        console.log(err.response.data.message);
-        setJoined(false);
-      });
-  }, [joined]);
+  const { isAuthenticated } = useAuth();
 
   return (
     <Routes location={location} key={location.pathname}>
-      <Route path="*" element={<Navigate to={"/signup"} />} />
-      <Route path="/register" element={<SignUp setJoined={setJoined} />} />
-      <Route path="/login" element={<Login setJoined={setJoined} />} />
-      {/* <Route
+      {/* Public/Guest Routes */}
+      <Route path="/register" element={<Register />} />
+      <Route
+        path="/login"
+        element={
+          <GuestRoute>
+            <Login />
+          </GuestRoute>
+        }
+      />
+
+      {/* Protected Routes (Require Auth) */}
+      <Route
+        path="/create"
+        element={
+          <ProtectedRoute>
+            <Create />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Room Routes (Require Auth + Room) */}
+      <Route
         path="/draw"
-        element={joined ? <Whiteboard /> : <Navigate to="/join" />}
-      /> */}
+        element={
+          <ProtectedRoute>
+            <RoomRoute>
+              <Whiteboard />
+            </RoomRoute>
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Fallback */}
+      <Route
+        path="*"
+        element={
+          <Navigate to={isAuthenticated ? "/create" : "/login"} replace />
+        }
+      />
     </Routes>
   );
 }
-function App() {
+
+export default function App() {
   return (
     <BrowserRouter>
-      <Pages />
+      <AuthProvider>
+        <RoomProvider>
+          <Pages />
+        </RoomProvider>
+      </AuthProvider>
     </BrowserRouter>
   );
 }
-
-export default App;

@@ -13,17 +13,29 @@ const registerCanvasHandlers = (io: Server, socket: Socket) => {
     }
   });
 
-  socket.on("add_line", async (line: Line) => {
-    try {
-      if (!socket.data.room_id || !socket.data.user_id)
-        throw new Error("Invalid user id or room id");
+  socket.on(
+    "add_line",
+    async (line: {
+      draw_mode: string;
+      color: string;
+      brush_size: number;
+      points: number[];
+    }) => {
+      try {
+        if (!socket.data.room_id || !socket.data.user_id)
+          throw new Error("Invalid user id or room id");
 
-      await addLine(socket.data.user_id, line);
-      socket.broadcast.to(socket.data.room_id).emit("update", line);
-    } catch (err) {
-      throw err;
-    }
-  });
+        const newLine: Line = {
+          ...line,
+          user_id: socket.data.user_id,
+        };
+        await addLine(newLine);
+        socket.broadcast.to(socket.data.room_id).emit("update", line);
+      } catch (err) {
+        throw err;
+      }
+    },
+  );
 };
 
 export default registerCanvasHandlers;

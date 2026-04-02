@@ -1,50 +1,13 @@
-import axios from "axios";
-import { connect, socket } from "../socket";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useRoom } from "../contexts/RoomContext";
 
-export default function Create({
-  setJoined,
-}: {
-  setJoined: React.Dispatch<React.SetStateAction<boolean>>;
-}) {
-  const [userName, setUserName] = useState<string>("");
+export default function Create() {
+  const [roomName, setRoomName] = useState<string>("");
+  const { createRoom } = useRoom();
 
-  useEffect(() => {
-    const connectError = (err: Error) => {
-      console.log(`error due to ${err.message}`);
-      setJoined(false);
-      setUserName("");
-    };
-
-    socket.on("connect_error", connectError);
-    return () => {
-      socket.off("update_canvas", connectError);
-    };
-  }, []);
-
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    axios
-      .post("http://localhost:3000/create", {
-        username: userName,
-        validateStatus: (status: number) => {
-          return status < 500;
-        },
-      })
-      .then((res) => {
-        sessionStorage.setItem("token", res.data);
-        connect();
-      })
-      .catch((err) => {
-        console.log(err.response.data.message);
-        setJoined(false);
-        setUserName("");
-      });
-  };
-
-  const onUserNameChange = (e: React.FormEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    setUserName((e.target as HTMLInputElement).value);
+    createRoom();
   };
 
   return (
@@ -54,11 +17,11 @@ export default function Create({
         className="w-1/4 h-1/3 min-w-80 min-h-60 bg-white rounded-2xl shadow-xl p-2 flex flex-col items-center justify-evenly"
       >
         <input
-          name="username"
-          value={userName}
-          onChange={onUserNameChange}
+          name="Room Name"
+          value={roomName}
+          onChange={(e) => setRoomName(e.currentTarget.value)}
           required={true}
-          placeholder="Username"
+          placeholder="Room Name"
           className="border-2 border-gray-300 rounded-2xl w-50 h-12 text-center"
           type="text"
         />

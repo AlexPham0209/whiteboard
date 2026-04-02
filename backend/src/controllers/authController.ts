@@ -40,7 +40,12 @@ export const register = async (
       { expiresIn: "1h" },
     );
 
-    res.status(201).json({ success: true, token: token });
+    res.cookie("sessionToken", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 60 * 60 * 1000, // 1 hour
+    });
+    res.status(200).json({ success: true, token: token });
   } catch (err) {
     return next(err);
   }

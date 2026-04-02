@@ -10,6 +10,7 @@ import {
 } from "../src/models/rooms.js";
 import {
   addMember,
+  getMember,
   getRoomFromMember,
   memberExists,
   removeMember,
@@ -48,6 +49,26 @@ describe("Members Model Tests", () => {
 
     const exists = await memberExists("testuser", room_code, dbClient);
     expect(exists).toBe(false);
+  });
+
+  dbTest("Get member", async ({ dbClient }) => {
+    const { room_code } = await createRoom(dbClient);
+    const { id } = await createUser("testuser", "password123", dbClient);
+
+    const member = await addMember(id, room_code, dbClient);
+
+    const result = await getMember(id, dbClient);
+
+    expect(result).toHaveProperty("id", member.id);
+    expect(result).toHaveProperty("room_id", member.room_id);
+  });
+
+  dbTest("Get no member", async ({ dbClient }) => {
+    const { room_code } = await createRoom(dbClient);
+    const { id } = await createUser("testuser", "password123", dbClient);
+    const result = await getMember(id, dbClient);
+
+    expect(result).toBe(null);
   });
 
   dbTest("Remove member", async ({ dbClient }) => {

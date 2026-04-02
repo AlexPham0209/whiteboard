@@ -18,6 +18,11 @@ io.use(authenticateSocket);
 
 // Socket connection
 io.on("connection", (socket) => {
+  console.log(
+    "New client connected:",
+    socket.data.username,
+    socket.data.user_id,
+  );
   registerRoomHandlers(io, socket);
   registerCanvasHandlers(io, socket);
   registerUserHandlers(io, socket);

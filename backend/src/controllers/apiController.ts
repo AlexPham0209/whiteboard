@@ -11,6 +11,7 @@ export const create = async (
   next: NextFunction,
 ) => {
   try {
+    console.log("Creating room...");
     const { room_code } = await createRoom();
     res.status(200).json({ success: true, room_code: room_code });
   } catch (err) {
