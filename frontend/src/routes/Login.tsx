@@ -11,16 +11,6 @@ export default function Login() {
     login(username, password);
   };
 
-  const onUsernameChange = (e: React.FormEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    setUsername((e.target as HTMLInputElement).value);
-  };
-
-  const onPasswordChange = (e: React.FormEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    setPassword((e.target as HTMLInputElement).value);
-  };
-
   return (
     <div className="w-full h-full flex justify-center items-center bg-gray-200">
       <form
@@ -30,7 +20,7 @@ export default function Login() {
         <input
           name="username"
           value={username}
-          onChange={onUsernameChange}
+          onChange={(e) => setUsername(e.currentTarget.value)}
           required={true}
           placeholder="Username"
           className="border-2 border-gray-300 rounded-2xl w-50 h-12 text-center"
@@ -39,7 +29,7 @@ export default function Login() {
         <input
           name="password"
           value={password}
-          onChange={onPasswordChange}
+          onChange={(e) => setPassword(e.currentTarget.value)}
           required={true}
           placeholder="Password"
           className="border-2 border-gray-300 rounded-2xl w-50 h-12 text-center"

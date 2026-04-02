@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode}) => {
     const [error, setError] = useState<string>("");
     const [isAuthenticated, setAuthenticated] = useState<boolean>(sessionStorage.getItem('token') !== null);
     const navigate = useNavigate();
-    
+
     const login = async (username: string, password: string) => {
         try {
             const response = await axios.post("http://localhost:3000/auth/login", {
@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode}) => {
             setUser(username);
             setToken(response.data.token);
             navigate("/create", {replace: true});
+
         } catch (error) {
             handleError(error, setError);
         }
@@ -45,13 +46,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode}) => {
                 },
             });
 
-        if (!response.data.success) throw new Error("Registration failed");
-        if(!response.data.token) throw new Error("Token not found");
-
-        sessionStorage.setItem("token", response.data.token);
-        setToken(response.data.token);
-        console.log("Registration successful, token stored");
-        navigate("/create", {replace: true});
+            if (!response.data.success) throw new Error("Registration failed");
+            if(!response.data.token) throw new Error("Token not found");
+            
+            console.log("Registration successful, token stored");
+            sessionStorage.setItem("token", response.data.token);
+            setUser(username);
+            setToken(response.data.token);
+            navigate("/create", {replace: true});
 
         } catch (error) {
             handleError(error, setError);

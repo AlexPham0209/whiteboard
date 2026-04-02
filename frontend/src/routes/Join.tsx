@@ -15,7 +15,7 @@ export default function Join({
       setJoinedRoom(false);
       setRoomCode("");
     };
-
+    
     socket.on("connect_error", connectError);
     return () => {
       socket.off("update_canvas", connectError);
