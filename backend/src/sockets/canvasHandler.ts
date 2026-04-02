@@ -24,7 +24,7 @@ const registerCanvasHandlers = (io: Server, socket: Socket) => {
       try {
         if (!socket.data.room_id || !socket.data.user_id)
           throw new Error("Invalid user id or room id");
-        
+
         const newLine: Line = {
           ...line,
           user_id: socket.data.user_id,

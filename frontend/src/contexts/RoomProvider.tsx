@@ -4,19 +4,21 @@ import { useNavigate } from "react-router-dom";
 import { handleError } from "../utils";
 import { RoomContext } from "./RoomContext";
 import { socket } from "../socket";
+import { useAuth } from "./AuthContext";
 
 export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
   const [roomCode, setRoomCode] = useState<string | null>(
     sessionStorage.getItem("room_code"),
   );
   const isRoomJoined = sessionStorage.getItem("room_code") !== null;
+  const { token } = useAuth();
 
   const [error, setError] = useState<string>("");
   const navigate = useNavigate();
 
   const createRoom = async () => {
     try {
-      if (!sessionStorage.getItem("token"))
+      if (!token)
         throw new Error("Authentication token not found");
 
       // Creating room
@@ -26,7 +28,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
         {},
         {
           headers: {
-            Authorization: `Bearer ${sessionStorage.getItem("token")}`,
+            Authorization: `Bearer ${token}`,
           },
 
           validateStatus: (status: number) => {

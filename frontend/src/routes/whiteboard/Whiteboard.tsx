@@ -58,6 +58,7 @@ function Whiteboard() {
 
   // Socket.io events
   useEffect(() => {
+    
     const onUpdate = (line: Line) => {
       setLines([...lines, line]);
     };
@@ -81,7 +82,7 @@ function Whiteboard() {
       socket.emit("get_code");
       socket.emit("get_members");
     };
-
+    
     socket.on("update", onUpdate);
     socket.on("update_canvas", onUpdateCanvas);
     socket.on("update_code", onUpdateCode);
@@ -166,7 +167,9 @@ function Whiteboard() {
 
     // when we zoom on trackpad, e.evt.ctrlKey is true
     // in that case lets revert direction
-    if (e.evt.ctrlKey) direction = -direction;
+    if (e.evt.ctrlKey) {
+      direction = -direction;
+    }
 
     const scaleBy = 1.05;
     const newScale = direction > 0 ? oldScale! * scaleBy : oldScale! / scaleBy;

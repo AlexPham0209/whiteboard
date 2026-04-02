@@ -11,8 +11,7 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
       if (!socket.data.user_id) throw new Error("Missing user ID");
 
       const userId = socket.data.user_id;
-      const { id, room_id } =
-        (await getMember(userId)) ?? (await addMember(userId, room_code));
+      const { id, room_id } = await addMember(userId, room_code);
 
       socket.data.member_id = id;
       socket.data.room_id = room_id;
