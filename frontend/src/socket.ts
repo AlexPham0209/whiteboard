@@ -8,6 +8,8 @@ export const socket = io(URL, { autoConnect: false });
 export const connect = () => {
   const token = sessionStorage.getItem("token");
   if (token) {
+    if (socket.connected) socket.disconnect();
+
     socket.auth = {
       token: token,
     };

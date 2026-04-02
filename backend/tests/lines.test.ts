@@ -27,13 +27,14 @@ describe("Lines Model Tests", () => {
     const member = await addMember(users.id, room_code, dbClient);
 
     const line: Line = {
+      user_id: users.id,
       draw_mode: "draw",
       color: "black",
       brush_size: 5,
       points: [0.1, 0.2, 0.3, 0.4],
     };
 
-    const result = await addLine(users.id, line, dbClient);
+    const result = await addLine(line, dbClient);
     expect(result).toHaveLength(1);
     expect(result[0]).toHaveProperty("user_id", users.id);
     expect(result[0]).toHaveProperty("draw_mode", line.draw_mode);
@@ -48,13 +49,14 @@ describe("Lines Model Tests", () => {
     const users = await createUser("testuser", "password123", dbClient);
 
     const line: Line = {
+      user_id: users.id,
       draw_mode: "draw",
       color: "black",
       brush_size: 5,
       points: [0.1, 0.2, 0.3, 0.4],
     };
     try {
-      const result = await addLine(users.id, line, dbClient);
+      const result = await addLine(line, dbClient);
     } catch (err) {
       expect(err).toBeInstanceOf(AppError);
       expect(err).toHaveProperty(
@@ -79,17 +81,17 @@ describe("Lines Model Tests", () => {
     const member3 = await addMember(user3.id, room1.room_code, dbClient);
     const member4 = await addMember(user4.id, room2.room_code, dbClient);
 
-    const line: Line = {
+    const line = {
       draw_mode: "draw",
       color: "black",
       brush_size: 5,
       points: [0.1, 0.2, 0.3, 0.4],
     };
 
-    const result1 = await addLine(user1.id, line, dbClient);
-    const result2 = await addLine(user2.id, line, dbClient);
-    const result3 = await addLine(user3.id, line, dbClient);
-    const result4 = await addLine(user4.id, line, dbClient);
+    const result1 = await addLine({ ...line, user_id: user1.id }, dbClient);
+    const result2 = await addLine({ ...line, user_id: user2.id }, dbClient);
+    const result3 = await addLine({ ...line, user_id: user3.id }, dbClient);
+    const result4 = await addLine({ ...line, user_id: user4.id }, dbClient);
 
     const canvas1 = await getCanvas(room1.id, dbClient);
     const canvas2 = await getCanvas(room2.id, dbClient);

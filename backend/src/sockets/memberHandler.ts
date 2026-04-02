@@ -2,7 +2,7 @@ import { getMembersInRoom } from "../models/rooms.js";
 import type { Server, Socket } from "socket.io";
 
 const registerUserHandlers = (io: Server, socket: Socket) => {
-  socket.on("get_members", async () => {
+  const getMembers = async () => {
     try {
       if (!socket.data.room_id) throw new Error("Missing room id");
 
@@ -11,7 +11,8 @@ const registerUserHandlers = (io: Server, socket: Socket) => {
     } catch (err) {
       throw err;
     }
-  });
+  }
+  socket.on("get_members", getMembers);
 };
 
 export default registerUserHandlers;

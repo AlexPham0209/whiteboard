@@ -5,12 +5,12 @@ export default function Register() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const { register } = useAuth();
-  
+
   const onSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
     e.preventDefault();
     register(username, password);
   };
-  
+
   return (
     <div className="w-full h-full flex justify-center items-center bg-gray-200">
       <form

@@ -35,9 +35,6 @@ function Whiteboard() {
   useEffect(() => {
     // Canvas initialization
     // Retrieve all drawn lines by users from the backend
-    socket.emit("get_canvas");
-    socket.emit("get_code");
-    socket.emit("get_users");
 
     // Setting stage properties
     Konva.dragButtons = [2];
@@ -79,10 +76,17 @@ function Whiteboard() {
       setUsers(users);
     };
 
+    const onRoomConnect = () => {
+      socket.emit("get_canvas");
+      socket.emit("get_code");
+      socket.emit("get_members");
+    };
+
     socket.on("update", onUpdate);
     socket.on("update_canvas", onUpdateCanvas);
     socket.on("update_code", onUpdateCode);
     socket.on("update_users", onUpdateUsers);
+    socket.on("on_room_connect", onRoomConnect);
 
     return () => {
       socket.off("update_canvas", onUpdateCanvas);
@@ -100,6 +104,7 @@ function Whiteboard() {
     const pos = e.target.getLayer()?.getRelativePointerPosition();
 
     const line: Line = {
+      user_id: undefined,
       draw_mode: mode,
       color: color,
       brush_size: brushSize,
@@ -129,7 +134,12 @@ function Whiteboard() {
     isDrawing.current = false;
     if (currentLine === undefined) return;
 
-    socket.emit("add_line", currentLine);
+    socket.emit("add_line", {
+      draw_mode: currentLine.draw_mode,
+      color: currentLine.color,
+      brush_size: currentLine.brush_size,
+      points: currentLine.points,
+    });
     setLines([...lines, currentLine]);
     setCurrentLine(undefined);
   };
@@ -156,9 +166,7 @@ function Whiteboard() {
 
     // when we zoom on trackpad, e.evt.ctrlKey is true
     // in that case lets revert direction
-    if (e.evt.ctrlKey) {
-      direction = -direction;
-    }
+    if (e.evt.ctrlKey) direction = -direction;
 
     const scaleBy = 1.05;
     const newScale = direction > 0 ? oldScale! * scaleBy : oldScale! / scaleBy;

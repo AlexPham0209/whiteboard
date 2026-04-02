@@ -4,14 +4,14 @@ import AppError from "../utils/error.js";
 import type { DB } from "@/utils/types.js";
 
 export interface Line {
-  user_id?: string;
+  user_id: string;
   draw_mode: string;
   color: string;
   brush_size: number;
   points: number[];
 }
 
-export const addLine = async (user_id: string, line: Line, db: DB = pool) => {
+export const addLine = async (line: Line, db: DB = pool) => {
   try {
     // BUG FIX: Changed WHERE members.user_id=$1 to $5
     // $1 is draw_mode, $5 is user_id
@@ -21,7 +21,7 @@ export const addLine = async (user_id: string, line: Line, db: DB = pool) => {
       FROM members
       WHERE members.user_id = $5
       RETURNING *`,
-      [line.draw_mode, line.color, line.brush_size, line.points, user_id],
+      [line.draw_mode, line.color, line.brush_size, line.points, line.user_id],
     );
 
     if (result.rows.length === 0)

@@ -67,7 +67,7 @@ export const login = async (
     const result = await getUser(username);
     const user_id = result.id;
     const hashed_password = result.password;
-      
+
     const same = await bcrypt.compare(password, hashed_password);
 
     if (same) {

@@ -40,6 +40,23 @@ export const addMember = async (
   }
 };
 
+export const getMember = async (user_id: string, client: DB = pool) => {
+  try {
+    const result = await client.query(
+      `SELECT id, room_id FROM members
+      WHERE members.user_id=$1`,
+      [user_id],
+    );
+
+    // If result is empty, it means the room_code didn't match any room
+    if (result.rowCount === 0) return null;
+
+    return result.rows[0];
+  } catch (err: any) {
+    throw err;
+  }
+};
+
 export const memberExists = async (
   username: string,
   room_code: string,
@@ -59,7 +76,6 @@ export const memberExists = async (
 
 export const removeMember = async (id: string, client: DB = pool) => {
   const result = await client.query("DELETE FROM members WHERE id = $1", [id]);
-  if (result.rowCount === 0) throw new AppError("Member record not found", 404);
 };
 
 export const removeAllMembers = async (client: DB = pool) => {
