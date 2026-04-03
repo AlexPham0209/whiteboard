@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { handleError } from "../utils";
 import { RoomContext } from "./RoomContext";
-import { socket } from "../socket";
+import { BACKEND_URL, socket } from "../socket";
 import { useAuth } from "./AuthContext";
 
 export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
@@ -24,7 +24,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       // Creating room
       console.log("Creating room...");
       const response = await axios.post(
-        "http://localhost:3000/api/create",
+        `${BACKEND_URL}/api/create`,
         {},
         {
           headers: {
@@ -85,12 +85,19 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
         joinRoom(roomCode);
     };
 
-    if (socket.connected)
+    const onDisconnect = () => {
+      sessionStorage.removeItem("room_code");
+      setRoomCode(null);
+    };
+
+    if (socket && socket.connected)
       onConnect();
     
     socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
     return () => {
       socket.off("connect");
+      socket.off("disconnect");
     };
   }, [joinRoom, roomCode]);
 

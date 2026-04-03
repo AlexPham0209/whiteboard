@@ -1,8 +1,8 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { handleError } from "../utils";
-import { connect, socket } from "../socket";
+import { BACKEND_URL, connect, socket } from "../socket";
 import { AuthContext } from "./AuthContext";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await axios.post("http://localhost:3000/auth/login", {
+      const response = await axios.post(`${BACKEND_URL}/auth/login`, {
         username: username,
         password: password,
         validateStatus: (status: number) => {
@@ -35,12 +35,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       navigate("/create", { replace: true });
     } catch (error) {
       handleError(error, setError);
+      logout();
     }
   };
 
   const register = async (username: string, password: string) => {
     try {
-      const response = await axios.post("http://localhost:3000/auth/register", {
+      const response = await axios.post(`${BACKEND_URL}/auth/register`, {
         username: username,
         password: password,
         validateStatus: (status: number) => {
@@ -58,22 +59,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       navigate("/create", { replace: true });
     } catch (error) {
       handleError(error, setError);
+      logout();
     }
   };
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     setToken(null);
     setError("");
     setUser("");
     sessionStorage.removeItem("token");
     navigate("/login", { replace: true });
-  };
+  }, [navigate]);
 
+  // Auto-connect socket if token exists on initial load or when token changes
   useEffect(() => {
     console.log(token ? "Logged in" : "Logged out");
     if (token) connect();
     else socket.disconnect();
   }, [token, navigate]);
+
+  // Socket.io events
+  useEffect(() => {
+    const handleDisconnect = () => {
+      console.log("Socket disconnected");
+      logout();
+    };
+
+    const handleConnectError = (err: Error) => {
+      console.log(`Connection error: ${err.message}`);
+      logout();
+    }
+
+    socket.on("disconnect", handleDisconnect);
+    socket.on("connect_error", handleConnectError);
+    return () => {
+      socket.off("disconnect", handleDisconnect);
+      socket.off("connect_error", handleConnectError);
+    };
+  }, [logout]);
+  
 
   return (
     <AuthContext.Provider
