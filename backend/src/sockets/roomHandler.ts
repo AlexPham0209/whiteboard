@@ -1,6 +1,6 @@
 import { getCanvas } from "@/models/lines.js";
 import { addMember, getMember, removeMember } from "../models/members.js";
-import { getMembersInRoom, roomExists } from "../models/rooms.js";
+import { deleteRoom, getMembersInRoom, roomExists } from "../models/rooms.js";
 import type { Server, Socket } from "socket.io";
 
 const registerRoomHandlers = (io: Server, socket: Socket) => {
@@ -21,19 +21,20 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
       socket.data.room_id = room_id;
       socket.data.room_code = room_code;
       socket.join(socket.data.room_id);
-      
-      // Retrieving necessary resources
+
+
+      //Retrieving necessary resources
       const members = await getMembersInRoom(socket.data.room_id);
       const lines = await getCanvas(room_id);
-      
+
       // Update members list for all members in room
       socket.broadcast.to(socket.data.room_id).emit("update_members", members);
-      
+
       callback({ success: true, message: "Joined room successfully" });
       socket.emit("init_state", {
         lines: lines,
         members: members,
-        code: room_code
+        code: room_code,
       });
     } catch (err) {
       if (err instanceof Error)
@@ -41,10 +42,11 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
       else callback({ success: false, message: "An unknown error occurred" });
     }
   };
-  
+
   const leaveRoom = async () => {
     try {
-      if (!socket.data.user_id) throw new Error("User not associated with socket");
+      if (!socket.data.user_id)
+        throw new Error("User not associated with socket");
 
       await removeMember(socket.data.user_id);
 
@@ -54,35 +56,44 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
       // Update members list for remaining members in room
       const members = await getMembersInRoom(socket.data.room_id);
       socket.broadcast.to(socket.data.room_id).emit("update_members", members);
-      
+
+      // If room is empty after leaving, delete it
+      setTimeout(async () => {
+        if (socket.data.room_id && !(await roomExists(socket.data.room_id))) return;
+        
+        const membersAfterTimeout = await getMembersInRoom(socket.data.room_id);
+        if (membersAfterTimeout.length === 0) {
+          await deleteRoom(socket.data.room_id);
+          console.log(
+            `Room ${socket.data.room_id} is empty after timeout and has been deleted.`,
+          );
+        }
+      }, 60000); 
+
       socket.data.member_id = undefined;
       socket.data.room_id = undefined;
+      socket.data.room_code = undefined;
     } catch (err) {
-      throw err;
-    }
-  };
-
-  const getCode = async () => {
-    try {
-      if (!socket.data.room_code) throw new Error("Room code not saved");
-      socket.emit("update_code", socket.data.room_code);
-    } catch (err) {
-      throw err;
+      console.log(err);
     }
   };
 
   socket.on("join_room", joinRoom);
-  socket.on("leave_room", async (callback: (response: { success: boolean; message?: string }) => void) => {
-    try {
-      await leaveRoom();
-      callback({ success: true, message: "Left room successfully" });
-    } catch (err) {
-      callback({ success: false, message: "Failed to leave room" });
-    }
-  });
+  socket.on(
+    "leave_room",
+    async (
+      callback: (response: { success: boolean; message?: string }) => void,
+    ) => {
+      try {
+        await leaveRoom();
+        callback({ success: true, message: "Left room successfully" });
+      } catch (err) {
+        callback({ success: false, message: "Failed to leave room" });
+      }
+    },
+  );
 
   socket.on("disconnect", leaveRoom);
-  socket.on("get_code", getCode);
 };
 
 export default registerRoomHandlers;

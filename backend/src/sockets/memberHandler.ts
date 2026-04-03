@@ -9,9 +9,9 @@ const registerUserHandlers = (io: Server, socket: Socket) => {
       const users = await getMembersInRoom(socket.data.room_id);
       socket.emit("update_users", users);
     } catch (err) {
-      throw err;
+      console.log(err);
     }
-  }
+  };
   socket.on("get_members", getMembers);
 };
 

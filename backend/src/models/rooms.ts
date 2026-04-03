@@ -52,7 +52,6 @@ export const roomExistsFromCode = async (code: string, client: DB = pool) => {
 
 export const deleteRoom = async (id: string, client: DB = pool) => {
   const result = await client.query("DELETE FROM rooms WHERE id=$1", [id]);
-  if (result.rowCount === 0) throw new AppError("Room not found", 404);
 };
 
 export const deleteAllRooms = async (code: string, client: DB = pool) => {
@@ -60,8 +59,6 @@ export const deleteAllRooms = async (code: string, client: DB = pool) => {
   const result = await client.query("DELETE FROM rooms WHERE room_code=$1", [
     code,
   ]);
-  if (result.rowCount === 0)
-    throw new AppError("No rooms found with that code", 404);
 };
 
 export const getMembersInRoom = async (room_id: string, client: DB = pool) => {

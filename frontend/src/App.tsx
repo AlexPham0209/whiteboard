@@ -19,9 +19,6 @@ import Login from "./routes/Login";
 import Create from "./routes/Create";
 import Whiteboard from "./routes/whiteboard/Whiteboard";
 
-export const PORT = import.meta.env.VITE_SERVER_PORT;
-export const BACKEND_URL = import.meta.env.PROD ? undefined : `http://localhost:${PORT}`;
-
 /**
  * Higher-Order Components for Route Protection
  */

@@ -6,7 +6,7 @@ interface RoomProps {
   error: string;
   createRoom(): void;
   joinRoom(roomCode: string): void;
-  leaveRoom(): void; 
+  leaveRoom(): void;
 }
 
 export const RoomContext = createContext<RoomProps>({

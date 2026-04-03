@@ -58,7 +58,6 @@ function Whiteboard() {
 
   // Socket.io events
   useEffect(() => {
-    
     const onUpdate = (line: Line) => {
       setLines([...lines, line]);
     };
@@ -77,12 +76,16 @@ function Whiteboard() {
       setUsers(users);
     };
 
-    const onInitState = (data: { lines: Line[]; code: string; members: { username: string; joined_at: string; }[]; }) => {
+    const onInitState = (data: {
+      lines: Line[];
+      code: string;
+      members: { username: string; joined_at: string }[];
+    }) => {
       onUpdateCanvas(data.lines);
       onUpdateCode(data.code);
       onUpdateUsers(data.members);
     };
-    
+
     socket.on("update", onUpdate);
     socket.on("update_canvas", onUpdateCanvas);
     socket.on("update_code", onUpdateCode);

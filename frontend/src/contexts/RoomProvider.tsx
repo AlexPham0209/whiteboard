@@ -18,8 +18,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
 
   const createRoom = async () => {
     try {
-      if (!token)
-        throw new Error("Authentication token not found");
+      if (!token) throw new Error("Authentication token not found");
 
       // Creating room
       console.log("Creating room...");
@@ -36,7 +35,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
           },
         },
       );
-      
+
       if (!response.data.success) throw new Error("Unauthorized");
       if (!response.data.room_code) throw new Error("Room code not received");
 
@@ -60,20 +59,16 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
 
     socket.emit("leave_room", (res: { success: boolean; message?: string }) => {
       if (!res.success) {
-        handleError(
-          new Error(res.message || "Failed to leave room"),
-          setError,
-        );
+        handleError(new Error(res.message || "Failed to leave room"), setError);
         return;
-      }  
-      
+      }
+
       console.log("Left room successfully");
     });
 
     if (window.location.pathname === "/draw")
       navigate(token ? "/join" : "/login", { replace: true });
   }, [navigate, token]);
-
 
   const joinRoom = useCallback(
     (roomCode: string) => {
@@ -90,7 +85,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
             leaveRoom();
             return;
           }
-          
+
           console.log("Joined room successfully after creation");
           sessionStorage.setItem("room_code", roomCode);
           setRoomCode(roomCode);
@@ -103,33 +98,31 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const onConnect = () => {
-      if (roomCode) 
-        joinRoom(roomCode);
+      if (roomCode) joinRoom(roomCode);
     };
-    
+
     const onConnectError = (err: Error) => {
       console.log("Connection error:", err);
       handleError(err, setError);
       sessionStorage.removeItem("room_code");
       setRoomCode(null);
-    }
+    };
 
     // If already connected, attempt to join room immediately (e.g., on page refresh)
-    if (socket && socket.connected)
-      onConnect();
-    else {
+    if (socket && socket.connected) onConnect();
+    else if (!token) {
       sessionStorage.removeItem("room_code");
       setRoomCode(null);
     }
-    
+
     socket.on("connect", onConnect);
     socket.on("connect_error", onConnectError);
-    
+
     return () => {
       socket.off("connect");
       socket.off("connect_error");
     };
-  }, [joinRoom, roomCode]);
+  }, [joinRoom, roomCode, token]);
 
   return (
     <RoomContext.Provider

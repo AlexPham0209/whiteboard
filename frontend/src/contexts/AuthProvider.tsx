@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           return status < 400;
         },
       });
-      
+
       if (!response.data.success) throw new Error("Login failed");
       if (!response.data.token) throw new Error("Token not found");
 
@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const handleConnectError = (err: Error) => {
       console.log(`Connection error: ${err.message}`);
       logout();
-    }
+    };
 
     socket.on("disconnect", handleDisconnect);
     socket.on("connect_error", handleConnectError);
@@ -97,7 +97,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       socket.off("connect_error", handleConnectError);
     };
   }, [logout]);
-  
 
   return (
     <AuthContext.Provider

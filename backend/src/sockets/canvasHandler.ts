@@ -9,7 +9,7 @@ const registerCanvasHandlers = (io: Server, socket: Socket) => {
       const canvas = await getCanvas(socket.data.room_id);
       socket.emit("update_canvas", canvas);
     } catch (err) {
-      throw err;
+      console.log(err);
     }
   });
 
@@ -32,7 +32,7 @@ const registerCanvasHandlers = (io: Server, socket: Socket) => {
         await addLine(newLine);
         socket.broadcast.to(socket.data.room_id).emit("update", line);
       } catch (err) {
-        throw err;
+        console.log(err);
       }
     },
   );
