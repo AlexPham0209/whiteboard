@@ -54,6 +54,27 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const leaveRoom = useCallback(() => {
+    sessionStorage.removeItem("room_code");
+    setRoomCode(null);
+
+    socket.emit("leave_room", (res: { success: boolean; message?: string }) => {
+      if (!res.success) {
+        handleError(
+          new Error(res.message || "Failed to leave room"),
+          setError,
+        );
+        return;
+      }  
+      
+      console.log("Left room successfully");
+    });
+
+    if (window.location.pathname === "/draw")
+      navigate(token ? "/join" : "/login", { replace: true });
+  }, [navigate, token]);
+
+
   const joinRoom = useCallback(
     (roomCode: string) => {
       // Join room after creating
@@ -66,6 +87,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
               new Error(res.message || "Failed to join room"),
               setError,
             );
+            leaveRoom();
             return;
           }
           
@@ -76,7 +98,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
         },
       );
     },
-    [navigate],
+    [navigate, leaveRoom],
   );
 
   useEffect(() => {
@@ -84,26 +106,34 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       if (roomCode) 
         joinRoom(roomCode);
     };
-
-    const onDisconnect = () => {
+    
+    const onConnectError = (err: Error) => {
+      console.log("Connection error:", err);
+      handleError(err, setError);
       sessionStorage.removeItem("room_code");
       setRoomCode(null);
-    };
+    }
 
+    // If already connected, attempt to join room immediately (e.g., on page refresh)
     if (socket && socket.connected)
       onConnect();
+    else {
+      sessionStorage.removeItem("room_code");
+      setRoomCode(null);
+    }
     
     socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
+    socket.on("connect_error", onConnectError);
+    
     return () => {
       socket.off("connect");
-      socket.off("disconnect");
+      socket.off("connect_error");
     };
   }, [joinRoom, roomCode]);
 
   return (
     <RoomContext.Provider
-      value={{ isRoomJoined, roomCode, error, createRoom, joinRoom }}
+      value={{ isRoomJoined, roomCode, error, createRoom, joinRoom, leaveRoom }}
     >
       {children}
     </RoomContext.Provider>

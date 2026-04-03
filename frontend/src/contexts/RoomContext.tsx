@@ -6,6 +6,7 @@ interface RoomProps {
   error: string;
   createRoom(): void;
   joinRoom(roomCode: string): void;
+  leaveRoom(): void; 
 }
 
 export const RoomContext = createContext<RoomProps>({
@@ -14,6 +15,7 @@ export const RoomContext = createContext<RoomProps>({
   error: "",
   createRoom: async () => {},
   joinRoom: async () => {},
+  leaveRoom: async () => {},
 });
 
 export const useRoom = () => {

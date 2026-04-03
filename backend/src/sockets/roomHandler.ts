@@ -44,10 +44,17 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
   
   const leaveRoom = async () => {
     try {
-      if (!socket.data.user_id)
-        throw new Error("User not associated with socket");
+      if (!socket.data.user_id) throw new Error("User not associated with socket");
 
       await removeMember(socket.data.user_id);
+
+      if (!socket.data.room_id) throw new Error("Room ID not saved");
+      socket.leave(socket.data.room_id);
+
+      // Update members list for remaining members in room
+      const members = await getMembersInRoom(socket.data.room_id);
+      socket.broadcast.to(socket.data.room_id).emit("update_members", members);
+      
       socket.data.member_id = undefined;
       socket.data.room_id = undefined;
     } catch (err) {
@@ -65,7 +72,15 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
   };
 
   socket.on("join_room", joinRoom);
-  socket.on("leave_room", leaveRoom);
+  socket.on("leave_room", async (callback: (response: { success: boolean; message?: string }) => void) => {
+    try {
+      await leaveRoom();
+      callback({ success: true, message: "Left room successfully" });
+    } catch (err) {
+      callback({ success: false, message: "Failed to leave room" });
+    }
+  });
+
   socket.on("disconnect", leaveRoom);
   socket.on("get_code", getCode);
 };

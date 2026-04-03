@@ -82,13 +82,7 @@ describe("Members Model Tests", () => {
   });
 
   dbTest("Remove non-existent member", async ({ dbClient }) => {
-    try {
-      await removeMember("dd9f9cf0-61b1-4a97-9e15-a9dfdfbefa95", dbClient);
-    } catch (err) {
-      expect(err).toBeInstanceOf(AppError);
-      expect(err).toHaveProperty("message", "Member record not found");
-      expect(err).toHaveProperty("status", 404);
-    }
+    await removeMember("dd9f9cf0-61b1-4a97-9e15-a9dfdfbefa95", dbClient);
   });
 
   dbTest("Get room from member", async ({ dbClient }) => {
