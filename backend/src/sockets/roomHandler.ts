@@ -20,7 +20,7 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
       if (!exists) throw new Error("Room does not exist");
       
       const { id, room_id } = await addMember(socket.data.user_id, room_code);
-
+      
       if (!room_id) throw new Error("Invalid Room ID");
 
       socket.data.member_id = id;
@@ -28,7 +28,7 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
       socket.data.room_code = room_code;
       socket.join(socket.data.room_id);
 
-      //Retrieving necessary resources
+      // Retrieving necessary resources
       const members = await getMembersInRoom(socket.data.room_id);
       const lines = await getCanvas(room_id);
 
@@ -44,47 +44,51 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
     } catch (err) {
       if (err instanceof Error)
         callback({ success: false, message: err.message });
-      else callback({ success: false, message: "An unknown error occurred" });
+      else 
+        callback({ success: false, message: "An unknown error occurred" });
     }
   };
 
   const leaveRoom = async () => {
     try {
-      if (!socket.data.user_id)
-        return;
-      
-      await removeMemberFromUserID(socket.data.user_id);
+      const { user_id, room_id } = socket.data;
 
-      if (!socket.data.room_id)
+      if (!user_id)
         return;
       
-      console.log( `User with ID ${socket.data.user_id} is leaving room ${socket.data.room_id}` );
-      socket.leave(socket.data.room_id);
+      await removeMemberFromUserID(user_id);
+
+      if (!room_id)
+        return;
+
+      console.log(`User with ID ${user_id} is leaving room ${room_id}`);
+      socket.leave(room_id);
     
       // Update members list for remaining members in room
-      const members = await getMembersInRoom(socket.data.room_id);
+      const members = await getMembersInRoom(room_id);
 
       // Delete if no members left in room
       if (members.length === 0) {
         // Give the user 5 seconds to reconnect before deleting the room
         setTimeout(async () => {
-          const members = await getMembersInRoom(socket.data.room_id);
+          const members = await getMembersInRoom(room_id);
           
           if (members.length === 0) {
-            await deleteRoom(socket.data.room_id);
-            console.log("Deleted empty room with ID:", socket.data.room_id);
+            await deleteRoom(room_id);
+            console.log("Deleted empty room with ID:", room_id);
           }
         }, 5000);
 
         return;
       }
       
-      socket.broadcast.to(socket.data.room_id).emit("update_members", members);
+      socket.broadcast.to(room_id).emit("update_members", members);
+    } catch (err) {
+      console.log(err);
+    } finally {
       socket.data.member_id = undefined;
       socket.data.room_id = undefined;
       socket.data.room_code = undefined;
-    } catch (err) {
-      console.log(err);
     }
   };
 
