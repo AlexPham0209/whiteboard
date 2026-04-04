@@ -12,15 +12,14 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
     try {
       if (!socket.data.user_id) throw new Error("Missing user ID");
 
-      const userId = socket.data.user_id;
-      
+      // Automatically leaves the room it is currently in (if any) before joining the new room
       await leaveRoom();
       
       // If room doesn't exist, return error
       const exists = await roomExistsFromCode(room_code);
       if (!exists) throw new Error("Room does not exist");
-
-      const { id, room_id } = await addMember(userId, room_code);
+      
+      const { id, room_id } = await addMember(socket.data.user_id, room_code);
 
       if (!room_id) throw new Error("Invalid Room ID");
 
@@ -54,14 +53,14 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
       if (!socket.data.user_id)
         return;
       
-      console.log( `User with ID ${socket.data.user_id} is leaving room ${socket.data.room_id}` );
       await removeMemberFromUserID(socket.data.user_id);
 
-      if (!socket.data.room_id) 
+      if (!socket.data.room_id)
         return;
-
+      
+      console.log( `User with ID ${socket.data.user_id} is leaving room ${socket.data.room_id}` );
       socket.leave(socket.data.room_id);
-
+    
       // Update members list for remaining members in room
       const members = await getMembersInRoom(socket.data.room_id);
 
@@ -104,9 +103,9 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
     },
   );
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", async () => {
     if (socket.data.user_id && socket.data.room_id)
-      leaveRoom();
+      await leaveRoom();
   });
 };
 
