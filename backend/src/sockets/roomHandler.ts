@@ -1,7 +1,8 @@
 import { getCanvas } from "@/models/lines.js";
-import { addMember, getMember, removeMember } from "../models/members.js";
-import { deleteRoom, getMembersInRoom, roomExists } from "../models/rooms.js";
+import { addMember, getMember, getRoomFromMember, removeMember, removeMemberFromUserID } from "../models/members.js";
+import { deleteRoom, getMembersInRoom, roomExistsFromCode } from "../models/rooms.js";
 import type { Server, Socket } from "socket.io";
+import { getRoomFromUser } from "@/models/users.js";
 
 const registerRoomHandlers = (io: Server, socket: Socket) => {
   const joinRoom = async (
@@ -12,8 +13,14 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
       if (!socket.data.user_id) throw new Error("Missing user ID");
 
       const userId = socket.data.user_id;
-      const { id, room_id } =
-        (await getMember(userId)) ?? (await addMember(userId, room_code));
+      
+      await leaveRoom();
+      
+      // If room doesn't exist, return error
+      const exists = await roomExistsFromCode(room_code);
+      if (!exists) throw new Error("Room does not exist");
+
+      const { id, room_id } = await addMember(userId, room_code);
 
       if (!room_id) throw new Error("Invalid Room ID");
 
@@ -21,7 +28,6 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
       socket.data.room_id = room_id;
       socket.data.room_code = room_code;
       socket.join(socket.data.room_id);
-
 
       //Retrieving necessary resources
       const members = await getMembersInRoom(socket.data.room_id);
@@ -46,30 +52,35 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
   const leaveRoom = async () => {
     try {
       if (!socket.data.user_id)
-        throw new Error("User not associated with socket");
+        return;
+      
+      console.log( `User with ID ${socket.data.user_id} is leaving room ${socket.data.room_id}` );
+      await removeMemberFromUserID(socket.data.user_id);
 
-      await removeMember(socket.data.user_id);
+      if (!socket.data.room_id) 
+        return;
 
-      if (!socket.data.room_id) throw new Error("Room ID not saved");
       socket.leave(socket.data.room_id);
 
       // Update members list for remaining members in room
       const members = await getMembersInRoom(socket.data.room_id);
+
+      // Delete if no members left in room
+      if (members.length === 0) {
+        // Give the user 5 seconds to reconnect before deleting the room
+        setTimeout(async () => {
+          const members = await getMembersInRoom(socket.data.room_id);
+          
+          if (members.length === 0) {
+            await deleteRoom(socket.data.room_id);
+            console.log("Deleted empty room with ID:", socket.data.room_id);
+          }
+        }, 5000);
+
+        return;
+      }
+      
       socket.broadcast.to(socket.data.room_id).emit("update_members", members);
-
-      // If room is empty after leaving, delete it
-      setTimeout(async () => {
-        if (socket.data.room_id && !(await roomExists(socket.data.room_id))) return;
-        
-        const membersAfterTimeout = await getMembersInRoom(socket.data.room_id);
-        if (membersAfterTimeout.length === 0) {
-          await deleteRoom(socket.data.room_id);
-          console.log(
-            `Room ${socket.data.room_id} is empty after timeout and has been deleted.`,
-          );
-        }
-      }, 60000); 
-
       socket.data.member_id = undefined;
       socket.data.room_id = undefined;
       socket.data.room_code = undefined;
@@ -93,7 +104,10 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
     },
   );
 
-  socket.on("disconnect", leaveRoom);
+  socket.on("disconnect", () => {
+    if (socket.data.user_id && socket.data.room_id)
+      leaveRoom();
+  });
 };
 
 export default registerRoomHandlers;

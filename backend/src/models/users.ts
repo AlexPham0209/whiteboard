@@ -84,3 +84,26 @@ export const removeUser = async (id: string, client: DB = pool) => {
     throw new AppError("Failed to delete user", 500);
   }
 };
+
+export const getRoomFromUser = async (
+  user_id: string,
+  client: DB = pool,
+) => {
+  try {
+    const result = await client.query(
+      `SELECT rooms.id, rooms.room_code FROM rooms 
+       JOIN members ON rooms.id = members.room_id 
+       WHERE members.user_id = $1`,
+      [user_id],
+    );
+
+    if (result.rows.length === 0)
+      return null;
+
+    return result.rows[0];
+  } catch (err: any) {
+    if (err instanceof AppError) throw err;
+    if (err.code === "22P02") throw new AppError("Invalid ID format", 400);
+    throw err;
+  }
+};

@@ -18,6 +18,7 @@ import Register from "./routes/Register";
 import Login from "./routes/Login";
 import Create from "./routes/Create";
 import Whiteboard from "./routes/whiteboard/Whiteboard";
+import Join from "./routes/Join";
 
 /**
  * Higher-Order Components for Route Protection
@@ -62,6 +63,15 @@ function Pages() {
         element={
           <ProtectedRoute>
             <Create />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/join"
+        element={
+          <ProtectedRoute>
+            <Join />
           </ProtectedRoute>
         }
       />
