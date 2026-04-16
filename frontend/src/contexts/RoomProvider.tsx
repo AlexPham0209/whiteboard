@@ -46,8 +46,9 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       // Ensures users is connected
       if (!socket.connected) throw new Error("Socket is not connected");
 
-      // Join room
-      if (!isRoomJoined) joinRoom(response.data.room_code);
+      // Join rooms automatically after creating
+      if (!isRoomJoined) 
+        joinRoom(response.data.room_code);
     } catch (error) {
       handleError(error, setError);
     }
@@ -98,7 +99,8 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const onConnect = () => {
-      if (roomCode) joinRoom(roomCode);
+      if (roomCode) 
+        joinRoom(roomCode);
     };
 
     const onConnectError = (err: Error) => {
@@ -107,9 +109,10 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       sessionStorage.removeItem("room_code");
       setRoomCode(null);
     };
-
+    
     // If already connected, attempt to join room immediately (e.g., on page refresh)
-    if (socket && socket.connected) onConnect();
+    if (socket && socket.connected) 
+      onConnect();
     else if (!token) {
       sessionStorage.removeItem("room_code");
       setRoomCode(null);
@@ -122,8 +125,8 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       socket.off("connect");
       socket.off("connect_error");
     };
-  }, [joinRoom, roomCode, token]);
-
+  }, [joinRoom, roomCode, token, isRoomJoined]);
+  
   return (
     <RoomContext.Provider
       value={{ isRoomJoined, roomCode, error, createRoom, joinRoom, leaveRoom }}

@@ -60,3 +60,12 @@ CREATE TABLE lines (
 CREATE INDEX idx_lines_user_id ON lines (user_id);
 CREATE INDEX idx_lines_room_id ON lines (room_id);
 CREATE INDEX idx_lines_created_at ON lines (created_at);
+
+-- -- Sessions
+-- CREATE TABLE sessions (
+--     id uuid PRIMARY KEY DEFAULT uuid_generate_v4(), 
+--     user_id uuid NOT NULL,
+
+--     CONSTRAINT fk_user 
+--         FOREIGN KEY (user_id) REFERENCES users(id),
+-- );

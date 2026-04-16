@@ -60,7 +60,7 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
 
       if (!room_id)
         return;
-
+        
       console.log(`User with ID ${user_id} is leaving room ${room_id}`);
       socket.leave(room_id);
     
