@@ -4,9 +4,9 @@ import { NavLink } from "./NavLink";
 
 export default function NavBar() {
   const { isAuthenticated, logout } = useAuth();
-  const { isRoomJoined } = useRoom();
+  const { roomCode } = useRoom();
 
-  if (isRoomJoined) return null;
+  if (roomCode) return null;
 
   return (
     <nav className="sticky top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">

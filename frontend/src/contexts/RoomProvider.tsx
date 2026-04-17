@@ -10,7 +10,6 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
   const [roomCode, setRoomCode] = useState<string | null>(
     sessionStorage.getItem("room_code"),
   );
-  const isRoomJoined = sessionStorage.getItem("room_code") !== null;
   const { token } = useAuth();
 
   const [error, setError] = useState<string>("");
@@ -47,7 +46,8 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       if (!socket.connected) throw new Error("Socket is not connected");
 
       // Join rooms automatically after creating
-      if (!isRoomJoined) joinRoom(response.data.room_code);
+      sessionStorage.setItem("room_code", response.data.room_code);
+      setRoomCode(response.data.room_code);
     } catch (error) {
       handleError(error, setError);
     }
@@ -72,6 +72,8 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
 
   const joinRoom = useCallback(
     (roomCode: string) => {
+      if (!socket.connected) return;
+
       // Join room after creating
       socket.emit(
         "join_room",
@@ -101,6 +103,11 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       if (roomCode) joinRoom(roomCode);
     };
 
+    if (!token) {
+      sessionStorage.removeItem("room_code");
+      setRoomCode(null);
+    }
+
     const onConnectError = (err: Error) => {
       console.log("Connection error:", err);
       handleError(err, setError);
@@ -109,12 +116,10 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     // If already connected, attempt to join room immediately (e.g., on page refresh)
-    if (socket && socket.connected) onConnect();
-    else if (!token) {
-      sessionStorage.removeItem("room_code");
-      setRoomCode(null);
-    }
-
+    if (socket && socket.connected && roomCode) 
+      joinRoom(roomCode);
+    
+  
     socket.on("connect", onConnect);
     socket.on("connect_error", onConnectError);
 
@@ -122,11 +127,11 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       socket.off("connect");
       socket.off("connect_error");
     };
-  }, [joinRoom, roomCode, token, isRoomJoined]);
+  }, [joinRoom, roomCode, token]);
 
   return (
     <RoomContext.Provider
-      value={{ isRoomJoined, roomCode, error, createRoom, joinRoom, leaveRoom }}
+      value={{ roomCode, error, createRoom, joinRoom, leaveRoom }}
     >
       {children}
     </RoomContext.Provider>

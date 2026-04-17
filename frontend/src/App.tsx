@@ -35,10 +35,10 @@ const GuestRoute = ({ children }: { children: ReactNode }) => {
 };
 
 const RoomRoute = ({ children }: { children: ReactNode }) => {
-  const { isRoomJoined } = useRoom();
+  const { roomCode } = useRoom();
   // If authenticated but no room, send to create.
   // (Assuming ProtectedRoute handles the auth part)
-  return isRoomJoined ? children : <Navigate to="/create" replace />;
+  return roomCode ? children : <Navigate to="/create" replace />;
 };
 
 function Pages() {
