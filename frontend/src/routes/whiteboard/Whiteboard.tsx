@@ -6,6 +6,7 @@ import { toKonvaLine, type Color, type DrawMode, type Line } from "./line.tsx";
 import { Palette } from "./Palette.tsx";
 import { RoomCode } from "./RoomCode.tsx";
 import { UserList, type User } from "./User.tsx";
+import { useRoom } from "../../contexts/RoomContext.tsx";
 
 const canvasWidth = 1500;
 const canvasHeight = 1000;
@@ -15,6 +16,7 @@ function Whiteboard() {
     width: window.innerWidth,
     height: window.innerHeight,
   });
+  const { leaveRoom } = useRoom();
   // do your calculations for stage properties
   const stageWidth = size.width;
   const stageHeight = size.height;
@@ -188,6 +190,12 @@ function Whiteboard() {
 
   return (
     <div className="w-full h-full flex justify-center">
+      <button 
+        className=" bg-purple-400 hover:bg-purple-500 disabled:bg-purple-300 text-white font-bold p-4 rounded-2xl transition-all transform active:scale-95 absolute top-5 left-20 -translate-x-1/2 z-10" 
+        onClick={leaveRoom}
+      >
+        Leave Room
+      </button>
       <RoomCode roomCode={roomCode} />
       <Palette
         mode={mode}
