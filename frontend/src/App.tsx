@@ -19,6 +19,7 @@ import Login from "./routes/Login";
 import Create from "./routes/Create";
 import Whiteboard from "./routes/whiteboard/Whiteboard";
 import Join from "./routes/Join";
+import NavBar from "./components/NavBar";
 
 /**
  * Higher-Order Components for Route Protection
@@ -104,6 +105,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <RoomProvider>
+          <NavBar />
           <Pages />
         </RoomProvider>
       </AuthProvider>
