@@ -56,6 +56,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
   const leaveRoom = useCallback(() => {
     sessionStorage.removeItem("room_code");
     setRoomCode(null);
+    setError("");
 
     socket.emit("leave_room", (res: { success: boolean; message?: string }) => {
       if (!res.success) {
@@ -84,7 +85,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
               new Error(res.message || "Failed to join room"),
               setError,
             );
-            leaveRoom();
+            setRoomCode(null);            
             return;
           }
 
@@ -95,7 +96,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
         },
       );
     },
-    [navigate, leaveRoom],
+    [navigate],
   );
 
   useEffect(() => {
@@ -116,10 +117,8 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     // If already connected, attempt to join room immediately (e.g., on page refresh)
-    if (socket && socket.connected && roomCode) 
-      joinRoom(roomCode);
-    
-  
+    if (socket && socket.connected && roomCode) joinRoom(roomCode);
+
     socket.on("connect", onConnect);
     socket.on("connect_error", onConnectError);
 

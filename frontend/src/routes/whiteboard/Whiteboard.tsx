@@ -190,8 +190,8 @@ function Whiteboard() {
 
   return (
     <div className="w-full h-full flex justify-center">
-      <button 
-        className=" bg-purple-400 hover:bg-purple-500 disabled:bg-purple-300 text-white font-bold p-4 rounded-2xl transition-all transform active:scale-95 absolute top-5 left-20 -translate-x-1/2 z-10" 
+      <button
+        className=" bg-purple-400 hover:bg-purple-500 disabled:bg-purple-300 text-white font-bold p-4 rounded-2xl transition-all transform active:scale-95 absolute top-5 left-20 -translate-x-1/2 z-10"
         onClick={leaveRoom}
       >
         Leave Room

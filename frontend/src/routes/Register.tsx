@@ -44,7 +44,7 @@ export default function Register() {
         <form onSubmit={onSubmit} className="p-8 space-y-5">
           {/* Username Field */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">
+            <label className="input-label">
               Username
             </label>
             <input
@@ -53,14 +53,14 @@ export default function Register() {
               onChange={(e) => setUsername(e.target.value)}
               required
               placeholder="choose_a_unique_name"
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all bg-gray-50/50"
+              className="input-field"
               type="text"
             />
           </div>
 
           {/* Password Field */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">
+            <label className="input-label">
               Password
             </label>
             <input
@@ -69,7 +69,7 @@ export default function Register() {
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="••••••••"
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all bg-gray-50/50"
+              className="input-field"
               type="password"
             />
           </div>
@@ -85,7 +85,7 @@ export default function Register() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               placeholder="••••••••"
-              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all bg-gray-50/50"
+              className="input-field"
               type="password"
             />
           </div>
@@ -93,7 +93,7 @@ export default function Register() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-purple-400 hover:bg-purple-500 disabled:bg-purple-300 text-white font-bold py-4 rounded-2xl shadow-xl shadow-purple-100 transition-all transform active:scale-95 mt-4"
+            className="button"
           >
             {loading ? "Creating account..." : "Get Started"}
           </button>

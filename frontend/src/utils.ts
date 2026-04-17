@@ -2,7 +2,7 @@ import { isAxiosError } from "axios";
 
 export const handleError = (
   error: unknown,
-  setError: 
+  setError:
     | React.Dispatch<React.SetStateAction<string>>
     | ((message: string) => void),
 ) => {
