@@ -91,7 +91,7 @@ function Whiteboard() {
     socket.on("update_code", onUpdateCode);
     socket.on("update_members", onUpdateUsers);
     socket.on("init_state", onInitState);
-    
+
     return () => {
       socket.off("update_canvas", onUpdateCanvas);
       socket.off("update", onUpdate);

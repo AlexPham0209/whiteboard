@@ -85,10 +85,7 @@ export const removeUser = async (id: string, client: DB = pool) => {
   }
 };
 
-export const getRoomFromUser = async (
-  user_id: string,
-  client: DB = pool,
-) => {
+export const getRoomFromUser = async (user_id: string, client: DB = pool) => {
   try {
     const result = await client.query(
       `SELECT rooms.id, rooms.room_code FROM rooms 
@@ -97,8 +94,7 @@ export const getRoomFromUser = async (
       [user_id],
     );
 
-    if (result.rows.length === 0)
-      return null;
+    if (result.rows.length === 0) return null;
 
     return result.rows[0];
   } catch (err: any) {

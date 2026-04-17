@@ -33,8 +33,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(username);
       setToken(response.data.token);
       navigate("/create", { replace: true });
-    } catch (error) {
-      handleError(error, setError);
+    } catch (err) {
+      handleError(err, setError);
       logout();
     }
   };
@@ -65,7 +65,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = useCallback(async () => {
     setToken(null);
-    setError("");
     setUser("");
     sessionStorage.removeItem("token");
     navigate("/login", { replace: true });
@@ -76,7 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log(token ? "Logged in" : "Logged out");
     if (token) connect();
     else socket.disconnect();
-  }, [token, navigate]);
+  }, [token]);
 
   // Socket.io events
   useEffect(() => {

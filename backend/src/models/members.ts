@@ -78,9 +78,10 @@ export const removeMember = async (id: string, client: DB = pool) => {
   const result = await client.query("DELETE FROM members WHERE id = $1", [id]);
 };
 
-
 export const removeMemberFromUserID = async (id: string, client: DB = pool) => {
-  const result = await client.query("DELETE FROM members WHERE user_id = $1", [id]);
+  const result = await client.query("DELETE FROM members WHERE user_id = $1", [
+    id,
+  ]);
 };
 
 export const removeAllMembers = async (client: DB = pool) => {

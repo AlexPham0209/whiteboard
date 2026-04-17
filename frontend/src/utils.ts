@@ -2,7 +2,9 @@ import { isAxiosError } from "axios";
 
 export const handleError = (
   error: unknown,
-  setError: (message: string) => void,
+  setError: 
+    | React.Dispatch<React.SetStateAction<string>>
+    | ((message: string) => void),
 ) => {
   let message = "An unexpected error occurred";
 

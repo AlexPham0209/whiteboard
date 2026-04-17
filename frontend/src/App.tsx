@@ -48,6 +48,7 @@ function Pages() {
   return (
     <Routes location={location} key={location.pathname}>
       {/* Public/Guest Routes */}
+
       <Route path="/register" element={<Register />} />
       <Route
         path="/login"

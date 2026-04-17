@@ -4,44 +4,111 @@ import { useAuth } from "../contexts/AuthContext";
 export default function Register() {
   const [username, setUsername] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [confirmPassword, setConfirmPassword] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+
   const { register } = useAuth();
 
-  const onSubmit = async (e: React.ChangeEvent<HTMLFormElement>) => {
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    register(username, password);
+    if (password !== confirmPassword) {
+      alert("Passwords do not match!");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await register(username, password);
+    } catch (err) {
+      console.error("Registration failed", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="w-full h-full flex justify-center items-center bg-gray-200">
-      <form
-        onSubmit={onSubmit}
-        className="w-1/4 h-1/3 min-w-80 min-h-60 bg-white rounded-2xl shadow-xl p-2 flex flex-col items-center justify-evenly"
-      >
-        <input
-          name="username"
-          value={username}
-          onChange={(e) => setUsername(e.currentTarget.value)}
-          required={true}
-          placeholder="Username"
-          className="border-2 border-gray-300 rounded-2xl w-50 h-12 text-center"
-          type="text"
-        />
-        <input
-          name="password"
-          value={password}
-          onChange={(e) => setPassword(e.currentTarget.value)}
-          required={true}
-          placeholder="Password"
-          className="border-2 border-gray-300 rounded-2xl w-50 h-12 text-center"
-          type="password"
-        />
-        <button
-          type="submit"
-          className="bg-purple-300 p-4 rounded-2xl text-1xl"
-        >
-          Enter
-        </button>
-      </form>
+    <div className="min-h-screen min-w-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-200 p-4">
+      <div className="w-full max-w-md bg-white rounded-4xl shadow-2xl border border-indigo-50 overflow-hidden">
+        {/* Decorative Header */}
+        <div className="relative h-32 bg-purple-400 flex items-center justify-center overflow-hidden">
+          <div className="relative text-center">
+            <h2 className="text-3xl font-bold text-white tracking-tight">
+              Create Account
+            </h2>
+            <p className="text-white text-sm mt-1">
+              Join Whiteboard today
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={onSubmit} className="p-8 space-y-5">
+          {/* Username Field */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">
+              Username
+            </label>
+            <input
+              name="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              placeholder="choose_a_unique_name"
+              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all bg-gray-50/50"
+              type="text"
+            />
+          </div>
+
+          {/* Password Field */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">
+              Password
+            </label>
+            <input
+              name="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all bg-gray-50/50"
+              type="password"
+            />
+          </div>
+
+          {/* Confirm Password Field */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-gray-500 ml-1">
+              Confirm Password
+            </label>
+            <input
+              name="confirmPassword"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+              placeholder="••••••••"
+              className="w-full px-4 py-3.5 rounded-2xl border border-gray-200 outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all bg-gray-50/50"
+              type="password"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-purple-400 hover:bg-purple-500 disabled:bg-purple-300 text-white font-bold py-4 rounded-2xl shadow-xl shadow-purple-100 transition-all transform active:scale-95 mt-4"
+          >
+            {loading ? "Creating account..." : "Get Started"}
+          </button>
+
+          <p className="text-center text-sm text-gray-500 mt-6">
+            Already have an account?{" "}
+            <a
+              href="/login"
+              className="text-purple-600 font-semibold hover:underline"
+            >
+              Log in
+            </a>
+          </p>
+        </form>
+      </div>
     </div>
   );
 }
