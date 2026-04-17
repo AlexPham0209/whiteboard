@@ -11,8 +11,8 @@ export default function NavBar() {
     return (
         <nav className="flex flex-row justify-between fixed top-0 h-20 w-full text-black text-sm font-medium z-20 bg-white shadow-2xs p-6">
             <h1 className="flex px-2 py-3 justify-center items-center text-center">Whiteboard</h1>
-            <ul className="flex flex-row gap-4 shadow-2xs">
-                <NavLink to="/">Home</NavLink>
+            <ul className="flex flex-row gap-4">
+                {/* <NavLink to="/">Home</NavLink> */}
                 {isAuthenticated && <NavLink to="/create">Create</NavLink>}
                 {isAuthenticated && <NavLink to="/join">Join</NavLink>}
                 {!isAuthenticated && <NavLink to="/register">Register</NavLink>}
