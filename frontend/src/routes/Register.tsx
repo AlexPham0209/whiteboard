@@ -27,11 +27,11 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen min-w-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-200 p-4">
+    <div className="background">
       <div className="w-full max-w-md bg-white rounded-4xl shadow-2xl border border-indigo-50 overflow-hidden">
         {/* Decorative Header */}
-        <div className="relative h-32 bg-purple-400 flex items-center justify-center overflow-hidden">
-          <div className="relative text-center">
+        <div className="h-32 bg-purple-400 flex items-center justify-center overflow-hidden">
+          <div className="text-center">
             <h2 className="text-3xl font-bold text-white tracking-tight">
               Create Account
             </h2>
