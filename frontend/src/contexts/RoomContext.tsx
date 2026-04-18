@@ -6,6 +6,7 @@ interface RoomProps {
   createRoom(): void;
   joinRoom(roomCode: string): void;
   leaveRoom(): void;
+  // setRoomCode: Dispatch<SetStateAction<string | null>>;
 }
 
 export const RoomContext = createContext<RoomProps>({
@@ -14,6 +15,7 @@ export const RoomContext = createContext<RoomProps>({
   createRoom: async () => {},
   joinRoom: async () => {},
   leaveRoom: async () => {},
+  // setRoomCode: () => {}
 });
 
 export const useRoom = () => {

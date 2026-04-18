@@ -111,7 +111,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     console.log(accessToken ? "Logged in" : "Logged out");
     if (accessToken) connect();
     else socket.disconnect();
-  }, [accessToken, refreshToken]);
+  }, [accessToken]);
 
   // Socket.io events
   useEffect(() => {
@@ -119,7 +119,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       console.log("Socket disconnected");
       logout();
     };
-
+    
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleConnectError = async (err: Error | any) => {
       console.log(

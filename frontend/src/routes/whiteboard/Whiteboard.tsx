@@ -37,6 +37,7 @@ function Whiteboard() {
   useEffect(() => {
     // Canvas initialization
     // Retrieve all drawn lines by users from the backend
+    socket.emit("init_state");
 
     // Setting stage properties
     Konva.dragButtons = [2];

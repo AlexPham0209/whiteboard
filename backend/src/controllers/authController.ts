@@ -70,7 +70,7 @@ export const login = async (
 
   if (!username || !password)
     return next(new AppError("Username and password are required", 400));
-
+  
   try {
     const result = await getUser(username);
     const user_id = result.id;

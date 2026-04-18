@@ -24,9 +24,7 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
       if (!socket.data.user_id) throw new Error("Missing user ID");
       
       // Automatically leaves the room it is currently in (if any) before joining the new room
-      const t = await getMember(socket.data.user_id);
-
-      await leaveRoom();
+      // await leaveRoom();
 
       // If room doesn't exist, return error
       const exists = await roomExistsFromCode(room_code);
@@ -49,6 +47,7 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
       socket.broadcast.to(socket.data.room_id).emit("update_members", members);
 
       callback({ success: true, message: "Joined room successfully" });
+      console.log("init baby");
       socket.emit("init_state", {
         lines: lines,
         members: members,
@@ -102,6 +101,26 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
     }
   };
 
+  const initState = async () => {
+    try {
+      if (!socket.data.room_id || !socket.data.room_code) throw new Error("Room id or Room Code not found");
+      const members = await getMembersInRoom(socket.data.room_id);
+      const lines = await getCanvas(socket.data.room_id);
+
+      // Update members list for all members in room
+      socket.broadcast.to(socket.data.room_id).emit("update_members", members);
+
+      socket.emit("init_state", {
+        lines: lines,
+        members: members,
+        code: socket.data.room_code,
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  socket.on("init_state", initState);
   socket.on("join_room", joinRoom);
   socket.on(
     "leave_room",

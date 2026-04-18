@@ -13,6 +13,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
   const { accessToken, refreshToken } = useAuth();
 
   const [error, setError] = useState<string>("");
+  const [isRoomJoined, setRoomJoined] = useState<boolean>(false);
   const navigate = useNavigate();
 
   const createRoom = async () => {
@@ -63,6 +64,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
   const leaveRoom = useCallback(() => {
     sessionStorage.removeItem("room_code");
     setRoomCode(null);
+    setRoomJoined(false);
     setError("");
 
     socket.emit("leave_room", (res: { success: boolean; message?: string }) => {
@@ -80,8 +82,8 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
 
   const joinRoom = useCallback(
     (roomCode: string) => {
-      if (!socket.connected) return;
-
+      if (!socket.connected || isRoomJoined) return;
+      
       // Join room after creating
       socket.emit(
         "join_room",
@@ -99,16 +101,17 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
           console.log("Joined room successfully after creation");
           sessionStorage.setItem("room_code", roomCode);
           setRoomCode(roomCode);
+          setRoomJoined(true);
           navigate("/draw", { replace: true });
         },
       );
     },
-    [navigate],
+    [navigate, isRoomJoined],
   );
 
   useEffect(() => {
     const onConnect = () => {
-      if (roomCode) joinRoom(roomCode);
+      if (roomCode && !isRoomJoined) joinRoom(roomCode);
     };
 
     if (!accessToken) {
@@ -124,7 +127,9 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     // If already connected, attempt to join room immediately (e.g., on page refresh)
-    if (socket && socket.connected && roomCode) joinRoom(roomCode);
+    if (socket && socket.connected && roomCode && !isRoomJoined) 
+      joinRoom(roomCode);
+    
 
     socket.on("connect", onConnect);
     socket.on("connect_error", onConnectError);
@@ -133,7 +138,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       socket.off("connect");
       socket.off("connect_error");
     };
-  }, [joinRoom, roomCode, accessToken]);
+  }, [joinRoom, roomCode, accessToken, isRoomJoined]);
 
   return (
     <RoomContext.Provider
