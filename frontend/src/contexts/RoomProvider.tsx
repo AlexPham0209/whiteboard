@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { handleError } from "../utils";
+import { AppError, handleError } from "../utils";
 import { RoomContext } from "./RoomContext";
 import { BACKEND_URL, socket } from "../socket";
 import { useAuth } from "./AuthContext";
@@ -10,15 +10,15 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
   const [roomCode, setRoomCode] = useState<string | null>(
     sessionStorage.getItem("room_code"),
   );
-  const { token } = useAuth();
+  const { accessToken, refreshToken } = useAuth();
 
   const [error, setError] = useState<string>("");
   const navigate = useNavigate();
 
   const createRoom = async () => {
     try {
-      if (!token) throw new Error("Authentication token not found");
-
+      if (!accessToken) throw new Error("Authentication token not found");
+      
       // Creating room
       console.log("Creating room...");
       const response = await axios.post(
@@ -26,7 +26,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
         {},
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
 
           validateStatus: (status: number) => {
@@ -35,7 +35,11 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
         },
       );
 
-      if (!response.data.success) throw new Error("Unauthorized");
+      if (!response.data.success) {
+        if (response.status === 401) {
+          throw new Error("Unauthorized: Please log in again");
+        }
+      }
       if (!response.data.room_code) throw new Error("Room code not received");
 
       console.log(
@@ -50,6 +54,9 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       setRoomCode(response.data.room_code);
     } catch (error) {
       handleError(error, setError);
+
+      if (error instanceof AppError && error.status === 401)
+        await refreshToken();
     }
   };
 
@@ -68,8 +75,8 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     if (window.location.pathname === "/draw")
-      navigate(token ? "/join" : "/login", { replace: true });
-  }, [navigate, token]);
+      navigate(accessToken ? "/join" : "/login", { replace: true });
+  }, [navigate, accessToken]);
 
   const joinRoom = useCallback(
     (roomCode: string) => {
@@ -85,7 +92,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
               new Error(res.message || "Failed to join room"),
               setError,
             );
-            setRoomCode(null);            
+            setRoomCode(null);
             return;
           }
 
@@ -104,7 +111,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       if (roomCode) joinRoom(roomCode);
     };
 
-    if (!token) {
+    if (!accessToken) {
       sessionStorage.removeItem("room_code");
       setRoomCode(null);
     }
@@ -126,7 +133,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       socket.off("connect");
       socket.off("connect_error");
     };
-  }, [joinRoom, roomCode, token]);
+  }, [joinRoom, roomCode, accessToken]);
 
   return (
     <RoomContext.Provider

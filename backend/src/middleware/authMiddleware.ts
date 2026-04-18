@@ -1,11 +1,12 @@
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { type Request, type Response, type NextFunction } from "express";
-import AppError from "../utils/error.js";
+import AppError, { createExtendedError } from "../utils/error.js";
 import { authenticateUser } from "../models/users.js";
 import type { ExtendedError, Socket } from "socket.io";
+import { create } from "node:domain";
 
 // JWT secrets
-const SECRET = process.env.SECRET!;
+const SECRET = process.env.JWT_SECRET!;
 const { sign } = jwt;
 
 export const authenticate = async (
@@ -31,7 +32,11 @@ export const authenticate = async (
 
     next();
   } catch (err) {
-    console.log(err);
+    if (err instanceof jwt.TokenExpiredError) {
+      return next(new AppError("Token expired", 401));
+    } else if (err instanceof jwt.JsonWebTokenError) {
+      return next(new AppError("Invalid token", 401));
+    }
     return next(err);
   }
 };
@@ -41,7 +46,7 @@ export const authenticateSocket = async (
   next: (err?: ExtendedError) => void,
 ) => {
   const token = socket.handshake.auth.token;
-  if (!token) return next(new Error("Missing token"));
+  if (!token) return next(createExtendedError("Missing token", 401));
 
   try {
     const decoded = jwt.verify(token, SECRET) as JwtPayload;
@@ -49,15 +54,21 @@ export const authenticateSocket = async (
 
     console.log("Decoded token data:", { userId, username });
 
-    if (!userId || !username) return next(new Error("Missing token data"));
+    if (!userId || !username)
+      return next(createExtendedError("Missing token data", 401));
 
     const authenticated = await authenticateUser(userId, username);
-    if (!authenticated) return next(new Error("Couldn't authenticate user"));
+    if (!authenticated)
+      return next(createExtendedError("Couldn't authenticate user", 401));
 
     socket.data.username = username;
     socket.data.user_id = userId;
     next();
   } catch (err) {
+    if (err instanceof jwt.TokenExpiredError)
+      return next(createExtendedError("Token expired", 401));
+    else if (err instanceof jwt.JsonWebTokenError)
+      return next(createExtendedError("Invalid token", 401));
     return next(err as ExtendedError);
   }
 };

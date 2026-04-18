@@ -8,7 +8,7 @@ export const BACKEND_URL = import.meta.env.PROD
 export const socket = io(BACKEND_URL, { autoConnect: false });
 
 export const connect = () => {
-  const token = sessionStorage.getItem("token");
+  const token = localStorage.getItem("access_token");
   if (token) {
     if (socket.connected) socket.disconnect();
 
@@ -16,6 +16,7 @@ export const connect = () => {
       token: token,
     };
 
+    console.log("Connecting to socket with token:", token);
     socket.connect();
   }
 };

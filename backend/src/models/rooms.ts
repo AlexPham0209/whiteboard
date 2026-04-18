@@ -54,11 +54,9 @@ export const deleteRoom = async (id: string, client: DB = pool) => {
   const result = await client.query("DELETE FROM rooms WHERE id=$1", [id]);
 };
 
-export const deleteAllRooms = async (code: string, client: DB = pool) => {
+export const deleteAllRooms = async (client: DB = pool) => {
   // Usually "deleteAll" implies a mass action; we check if anything was actually deleted
-  const result = await client.query("DELETE FROM rooms WHERE room_code=$1", [
-    code,
-  ]);
+  const result = await client.query("DELETE FROM rooms");
 };
 
 export const getMembersInRoom = async (room_id: string, client: DB = pool) => {
