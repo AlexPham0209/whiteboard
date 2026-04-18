@@ -1,4 +1,4 @@
-import { getCanvas } from "@/models/lines.js";
+import { getCanvas, type Line } from "@/models/lines.js";
 import {
   addMember,
   getMember,
@@ -18,7 +18,7 @@ import { getRoomFromUser } from "@/models/users.js";
 const registerRoomHandlers = (io: Server, socket: Socket) => {
   const joinRoom = async (
     room_code: string,
-    callback: (response: { success: boolean; message?: string }) => void,
+    callback: (response: { success: boolean; message?: string, lines?: Line[], members?: any[] }) => void,
   ) => {
     try {
       if (!socket.data.user_id) throw new Error("Missing user ID");
@@ -42,17 +42,11 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
       // Retrieving necessary resources
       const members = await getMembersInRoom(socket.data.room_id);
       const lines = await getCanvas(room_id);
-
+      
+      console.log(members);
       // Update members list for all members in room
       socket.broadcast.to(socket.data.room_id).emit("update_members", members);
-
-      callback({ success: true, message: "Joined room successfully" });
-      console.log("init baby");
-      socket.emit("init_state", {
-        lines: lines,
-        members: members,
-        code: room_code,
-      });
+      callback({ success: true, message: "Joined room successfully", lines: lines, members: members });
     } catch (err) {
       if (err instanceof Error)
         callback({ success: false, message: err.message });
@@ -101,26 +95,6 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
     }
   };
 
-  const initState = async () => {
-    try {
-      if (!socket.data.room_id || !socket.data.room_code) throw new Error("Room id or Room Code not found");
-      const members = await getMembersInRoom(socket.data.room_id);
-      const lines = await getCanvas(socket.data.room_id);
-
-      // Update members list for all members in room
-      socket.broadcast.to(socket.data.room_id).emit("update_members", members);
-
-      socket.emit("init_state", {
-        lines: lines,
-        members: members,
-        code: socket.data.room_code,
-      });
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
-  socket.on("init_state", initState);
   socket.on("join_room", joinRoom);
   socket.on(
     "leave_room",

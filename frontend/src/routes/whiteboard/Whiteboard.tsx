@@ -5,7 +5,7 @@ import { socket } from "../../socket.ts";
 import { toKonvaLine, type Color, type DrawMode, type Line } from "./line.tsx";
 import { Palette } from "./Palette.tsx";
 import { RoomCode } from "./RoomCode.tsx";
-import { UserList, type User } from "./User.tsx";
+import { MemberList } from "./Member.tsx";
 import { useRoom } from "../../contexts/RoomContext.tsx";
 
 const canvasWidth = 1500;
@@ -25,19 +25,18 @@ function Whiteboard() {
   const [mode, setMode] = useState<DrawMode>("draw");
   const [color, setColor] = useState<Color>("black");
   const [brushSize, setBrushSize] = useState<number>(5);
-  const [lines, setLines] = useState<Line[]>([]);
   const [currentLine, setCurrentLine] = useState<Line>();
-  const [roomCode, setRoomCode] = useState<string>("");
-  const [users, setUsers] = useState<User[]>([]);
 
   // Object references
   const isDrawing = useRef<boolean>(false);
   const stageRef = useRef<Konva.Stage>(null);
 
+  // Room states
+  const { lines, setLines, members, setMembers, roomCode } = useRoom();
+
   useEffect(() => {
     // Canvas initialization
     // Retrieve all drawn lines by users from the backend
-    socket.emit("init_state");
 
     // Setting stage properties
     Konva.dragButtons = [2];
@@ -69,39 +68,22 @@ function Whiteboard() {
       setLines(data);
     };
 
-    const onUpdateCode = (code: string) => {
-      setRoomCode(code);
-    };
-
-    const onUpdateUsers = (
-      users: { username: string; joined_at: string }[],
+    const onUpdateMembers = (
+      member: { username: string; joined_at: string }[],
     ) => {
-      setUsers(users);
-    };
-
-    const onInitState = (data: {
-      lines: Line[];
-      code: string;
-      members: { username: string; joined_at: string }[];
-    }) => {
-      onUpdateCanvas(data.lines);
-      onUpdateCode(data.code);
-      onUpdateUsers(data.members);
+      setMembers(member);
     };
 
     socket.on("update", onUpdate);
     socket.on("update_canvas", onUpdateCanvas);
-    socket.on("update_code", onUpdateCode);
-    socket.on("update_members", onUpdateUsers);
-    socket.on("init_state", onInitState);
+    socket.on("update_members", onUpdateMembers);
 
     return () => {
       socket.off("update_canvas", onUpdateCanvas);
       socket.off("update", onUpdate);
-      socket.off("update_code", onUpdateCode);
-      socket.off("update_users", onUpdateUsers);
+      socket.off("update_members", onUpdateMembers);
     };
-  }, [lines]);
+  }, [lines, setLines, setMembers]);
 
   // Navigation and drawing functions
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -197,7 +179,7 @@ function Whiteboard() {
       >
         Leave Room
       </button>
-      <RoomCode roomCode={roomCode} />
+      <RoomCode roomCode={roomCode ? roomCode : ""} />
       <Palette
         mode={mode}
         setMode={setMode}
@@ -206,7 +188,7 @@ function Whiteboard() {
         setBrushSize={setBrushSize}
       />
 
-      <UserList users={users} />
+      <MemberList members={members} />
 
       <Stage
         ref={stageRef}
