@@ -38,7 +38,7 @@ describe("Members Model Tests", () => {
     const user_id = user.id;
 
     await addMember(user_id, room_code, dbClient);
-    const exists = await memberExists("testuser", room_code, dbClient);
+    const exists = await memberExists(user_id, room_code, dbClient);
     expect(exists).toBe(true);
   });
 
@@ -47,7 +47,7 @@ describe("Members Model Tests", () => {
     const room_code = room.room_code;
     const user = await createUser("testuser", "password123", dbClient);
 
-    const exists = await memberExists("testuser", room_code, dbClient);
+    const exists = await memberExists(user.id, room_code, dbClient);
     expect(exists).toBe(false);
   });
 
@@ -77,7 +77,7 @@ describe("Members Model Tests", () => {
 
     const member = await addMember(id, room_code, dbClient);
     await removeMember(member.id, dbClient);
-    const exists = await memberExists("testuser", room_code, dbClient);
+    const exists = await memberExists(id, room_code, dbClient);
     expect(exists).toBe(false);
   });
 

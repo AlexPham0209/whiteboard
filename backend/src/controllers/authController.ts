@@ -15,10 +15,10 @@ const SALT_ROUNDS =
   process.env.SALT_ROUNDS !== undefined ? Number(process.env.SALT_ROUNDS) : 12;
 
 // JWT secrets
-console.log("JWT_SECRET:", process.env.JWT_SECRET);
-console.log("JWT_REFRESH_SECRET:", process.env.JWT_REFRESH_SECRET);
-console.log("JWT_EXPIRATION:", process.env.JWT_EXPIRATION);
-console.log("JWT_REFRESH_EXPIRATION:", process.env.JWT_REFRESH_EXPIRATION);
+// console.log("JWT_SECRET:", process.env.JWT_SECRET);
+// console.log("JWT_REFRESH_SECRET:", process.env.JWT_REFRESH_SECRET);
+// console.log("JWT_EXPIRATION:", process.env.JWT_EXPIRATION);
+// console.log("JWT_REFRESH_EXPIRATION:", process.env.JWT_REFRESH_EXPIRATION);
 
 // Register
 export const register = async (
@@ -82,7 +82,7 @@ export const login = async (
     if (same) {
       const accessToken = generateAccessToken(user);
       const refreshToken = generateRefreshToken(user);
-
+      
       res
         .status(200)
         .cookie("refresh_token", refreshToken, {
@@ -118,9 +118,9 @@ export const refreshToken = async (
     if (!userId || !username)
       return next(new AppError("Missing token data", 401));
 
-    const authenticated = await authenticateUser(userId, username);
-    if (!authenticated)
-      return next(new AppError("Couldn't authenticate user", 401));
+    // const authenticated = await authenticateUser(userId, username);
+    // if (!authenticated)
+    //   return next(new AppError("Couldn't authenticate user", 401));
 
     const user = { userId, username };
     const newAccessToken = generateAccessToken(user);

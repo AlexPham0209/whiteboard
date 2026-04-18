@@ -58,17 +58,16 @@ export const getMember = async (user_id: string, client: DB = pool) => {
 };
 
 export const memberExists = async (
-  username: string,
+  user_id: string,
   room_code: string,
   client: DB = pool,
 ) => {
   const result = await client.query(
     `SELECT 1 FROM members 
      JOIN rooms ON members.room_id = rooms.id 
-     JOIN users ON members.user_id = users.id
-     WHERE users.username = $1 AND rooms.room_code = $2 
+     WHERE members.user_id = $1 AND rooms.room_code = $2 
      LIMIT 1`,
-    [username, room_code],
+    [user_id, room_code],
   );
 
   return result.rows.length > 0;

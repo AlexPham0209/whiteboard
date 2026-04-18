@@ -3,6 +3,7 @@ import {
   addMember,
   getMember,
   getRoomFromMember,
+  memberExists,
   removeMember,
   removeMemberFromUserID,
 } from "../models/members.js";
@@ -21,8 +22,10 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
   ) => {
     try {
       if (!socket.data.user_id) throw new Error("Missing user ID");
-
+      
       // Automatically leaves the room it is currently in (if any) before joining the new room
+      const t = await getMember(socket.data.user_id);
+
       await leaveRoom();
 
       // If room doesn't exist, return error

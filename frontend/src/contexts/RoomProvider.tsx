@@ -18,7 +18,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
   const createRoom = async () => {
     try {
       if (!accessToken) throw new Error("Authentication token not found");
-      
+
       // Creating room
       console.log("Creating room...");
       const response = await axios.post(

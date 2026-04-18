@@ -26,10 +26,6 @@ export const authenticate = async (
     if (!userId || !username)
       return next(new AppError("Missing token data", 401));
 
-    const authenticated = await authenticateUser(userId, username);
-    if (!authenticated)
-      return next(new AppError("Couldn't authenticate user", 401));
-
     next();
   } catch (err) {
     if (err instanceof jwt.TokenExpiredError) {
@@ -52,14 +48,8 @@ export const authenticateSocket = async (
     const decoded = jwt.verify(token, SECRET) as JwtPayload;
     const { userId, username } = decoded.data;
 
-    console.log("Decoded token data:", { userId, username });
-
     if (!userId || !username)
       return next(createExtendedError("Missing token data", 401));
-
-    const authenticated = await authenticateUser(userId, username);
-    if (!authenticated)
-      return next(createExtendedError("Couldn't authenticate user", 401));
 
     socket.data.username = username;
     socket.data.user_id = userId;
