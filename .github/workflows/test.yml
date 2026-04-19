@@ -15,7 +15,7 @@ jobs:
 
       - name: Make script executable (if needed)
         run: chmod +x ./scripts/test.sh
-
+        
       - name: Build and Test
         run: |
           ./scripts/test.sh
@@ -31,4 +31,9 @@ jobs:
           POSTGRES_USER: ${{ vars.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ vars.POSTGRES_PASSWORD }}
           POSTGRES_PORT: ${{ vars.POSTGRES_PORT }}
-          SECRET: ${{ vars.SECRET }}
+
+          JWT_SECRET: ${{ vars.JWT_SECRET }}
+          JWT_REFRESH_SECRET: ${{ vars.JWT_REFRESH_SECRET }}
+          JWT_EXPIRATION: ${{ vars.JWT_EXPIRATION }}
+          JWT_REFRESH_XPIRATION: ${{ vars.JWT_REFRESH_EXPIRATION }}
+
