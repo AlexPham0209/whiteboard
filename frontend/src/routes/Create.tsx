@@ -3,7 +3,7 @@ import { useRoom } from "../contexts/RoomContext";
 
 export default function Create() {
   const [roomName, setRoomName] = useState<string>("");
-  const { createRoom } = useRoom();
+  const { createRoom, error } = useRoom();
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -34,6 +34,8 @@ export default function Create() {
             type="text"
           />
         </div>
+
+        {error && <div className="text-center text-red-500 mt-4">{error}</div>}
 
         <button type="submit" disabled={loading} className="button">
           {loading ? (

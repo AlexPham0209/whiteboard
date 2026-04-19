@@ -19,7 +19,7 @@ export default function Login() {
 
   return (
     <div className="background">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
+      <div className="max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
         {/* Header Section */}
         <div className="bg-purple-400 p-8 text-white text-center">
           <h2 className="text-3xl font-bold">Welcome Back</h2>

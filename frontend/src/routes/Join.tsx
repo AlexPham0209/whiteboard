@@ -5,7 +5,7 @@ export default function Join() {
   const [roomCode, setRoomCode] = useState<string>("");
   const { error, joinRoom } = useRoom();
   const [loading, setLoading] = useState(false);
-    
+
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);

@@ -1,4 +1,9 @@
-import { createContext, useContext, type Dispatch, type SetStateAction } from "react";
+import {
+  createContext,
+  useContext,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import type { Line } from "../routes/whiteboard/line";
 import type { Member } from "../routes/whiteboard/Member";
 
@@ -23,7 +28,7 @@ export const RoomContext = createContext<RoomProps>({
   lines: [],
   setLines: () => {},
   members: [],
-  setMembers: () => {}
+  setMembers: () => {},
 });
 
 export const useRoom = () => {

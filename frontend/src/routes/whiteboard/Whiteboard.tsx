@@ -2,22 +2,28 @@ import Konva from "konva";
 import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Rect } from "react-konva";
 import { socket } from "../../socket.ts";
-import { toKonvaLine, type Color, type DrawMode, type Line } from "./line.tsx";
+import {
+  WhiteboardLine,
+  type Color,
+  type DrawMode,
+  type Line,
+} from "./line.tsx";
 import { Palette } from "./Palette.tsx";
 import { RoomCode } from "./RoomCode.tsx";
-import { MemberList } from "./Member.tsx";
+import { MemberList, type Member } from "./Member.tsx";
 import { useRoom } from "../../contexts/RoomContext.tsx";
 
-const canvasWidth = 1500;
-const canvasHeight = 1000;
+const CANVAS_SIZE = { width: 5000, height: 2500 };
+const SCALE_BY = 1.1;
 
 function Whiteboard() {
   const [size, setSize] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
-  const { leaveRoom } = useRoom();
-  // do your calculations for stage properties
+  const { lines, setLines, members, setMembers, roomCode, leaveRoom } =
+    useRoom();
+
   const stageWidth = size.width;
   const stageHeight = size.height;
 
@@ -31,75 +37,61 @@ function Whiteboard() {
   const isDrawing = useRef<boolean>(false);
   const stageRef = useRef<Konva.Stage>(null);
 
-  // Room states
-  const { lines, setLines, members, setMembers, roomCode } = useRoom();
+  // Resize Handler
+  useEffect(() => {
+    const handleResize = () => {
+      setSize({ width: window.innerWidth, height: window.innerHeight });
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
-    // Canvas initialization
-    // Retrieve all drawn lines by users from the backend
-
     // Setting stage properties
     Konva.dragButtons = [2];
+
+    // Apply CSS background to stage container
     if (stageRef.current) {
-      // Apply CSS background to stage container
       const container = stageRef.current.container();
       container.style.backgroundColor = "gray";
     }
-
-    // Dynamic stage resizing
-    const checkSize = () => {
-      setSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
-    };
-
-    window.addEventListener("resize", checkSize);
-    return () => window.removeEventListener("resize", checkSize);
   }, []);
 
   // Socket.io events
   useEffect(() => {
-    const onUpdate = (line: Line) => {
-      setLines([...lines, line]);
-    };
-
-    const onUpdateCanvas = (data: Line[]) => {
-      setLines(data);
-    };
-
-    const onUpdateMembers = (
-      member: { username: string; joined_at: string }[],
-    ) => {
-      setMembers(member);
-    };
+    const onUpdate = (line: Line) => setLines((prev) => [...prev, line]);
+    const onUpdateCanvas = (data: Line[]) => setLines(data);
+    const onUpdateMembers = (members: Member[]) => setMembers(members);
 
     socket.on("update", onUpdate);
     socket.on("update_canvas", onUpdateCanvas);
     socket.on("update_members", onUpdateMembers);
 
     return () => {
-      socket.off("update_canvas", onUpdateCanvas);
       socket.off("update", onUpdate);
+      socket.off("update_canvas", onUpdateCanvas);
       socket.off("update_members", onUpdateMembers);
     };
-  }, [lines, setLines, setMembers]);
+  }, [setLines, setMembers]);
 
   // Navigation and drawing functions
-  const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
-    if (e.evt.button === 2) return;
+  const handleMouseDown = (
+    e: Konva.KonvaEventObject<MouseEvent | TouchEvent>,
+  ) => {
+    if (e.evt instanceof MouseEvent && e.evt.button === 2) return;
 
     isDrawing.current = true;
-    const pos = e.target.getLayer()?.getRelativePointerPosition();
+    const stage = e.target.getStage();
+    const pos = stage?.getRelativePointerPosition();
 
-    const line: Line = {
-      user_id: undefined,
-      draw_mode: mode,
-      color: color,
-      brush_size: brushSize,
-      points: [pos!.x, pos!.y],
-    };
-    setCurrentLine(line);
+    if (pos) {
+      setCurrentLine({
+        draw_mode: mode,
+        color: color,
+        brush_size: brushSize,
+        points: [pos!.x, pos!.y],
+      });
+    }
   };
 
   const handleMouseMove = async (
@@ -107,15 +99,17 @@ function Whiteboard() {
   ) => {
     if (!isDrawing.current) return;
 
-    const pos = e.target.getLayer()?.getRelativePointerPosition();
+    const stage = e.target.getStage();
+    const pos = stage?.getRelativePointerPosition();
 
-    if (currentLine !== undefined) {
-      const newLine: Line = {
-        ...currentLine,
-        points: [...currentLine.points, pos!.x, pos!.y],
-      };
-
-      setCurrentLine(newLine);
+    if (pos) {
+      setCurrentLine((prev: Line | undefined) => {
+        if (!prev) return undefined;
+        return {
+          ...prev,
+          points: [...prev.points, pos.x, pos.y],
+        };
+      });
     }
   };
 
@@ -123,63 +117,44 @@ function Whiteboard() {
     isDrawing.current = false;
     if (currentLine === undefined) return;
 
-    socket.emit("add_line", {
-      draw_mode: currentLine.draw_mode,
-      color: currentLine.color,
-      brush_size: currentLine.brush_size,
-      points: currentLine.points,
-    });
-    setLines([...lines, currentLine]);
+    socket.emit("add_line", currentLine);
+    setLines((prev) => [...prev, currentLine]);
     setCurrentLine(undefined);
   };
 
   const handleWheel = (e: Konva.KonvaEventObject<WheelEvent>) => {
     e.evt.preventDefault();
-
     const stage = stageRef.current;
-
-    if (stage === null) return;
+    if (!stage) return;
 
     const oldScale = stage.scaleX();
     const pointer = stage.getPointerPosition();
-
-    if (pointer === null) return;
+    if (!pointer) return;
 
     const mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,
       y: (pointer.y - stage.y()) / oldScale,
     };
 
-    // how to scale? Zoom in? Or zoom out?
-    let direction = e.evt.deltaY > 0 ? -1 : 1;
 
-    // when we zoom on trackpad, e.evt.ctrlKey is true
-    // in that case lets revert direction
-    if (e.evt.ctrlKey) {
-      direction = -direction;
-    }
-
-    const scaleBy = 1.05;
-    const newScale = direction > 0 ? oldScale! * scaleBy : oldScale! / scaleBy;
-
+    const direction = e.evt.deltaY > 0 ? -1 : 1;
+    const newScale = direction > 0 ? oldScale * SCALE_BY : oldScale / SCALE_BY;
+      
     stage.scale({ x: newScale, y: newScale });
-
-    const newPos = {
+    stage.position({
       x: pointer.x - mousePointTo.x * newScale,
       y: pointer.y - mousePointTo.y * newScale,
-    };
-    stage.position(newPos);
+    });
   };
 
   return (
-    <div className="w-full h-full flex justify-center">
-      <button
-        className=" bg-purple-400 hover:bg-purple-500 disabled:bg-purple-300 text-white font-bold p-4 rounded-2xl transition-all transform active:scale-95 absolute top-5 left-20 -translate-x-1/2 z-10"
-        onClick={leaveRoom}
-      >
+    <div className="w-screen h-screen flex justify-center">
+      <button className="exit-button" onClick={leaveRoom}>
         Leave Room
       </button>
+
       <RoomCode roomCode={roomCode ? roomCode : ""} />
+
       <Palette
         mode={mode}
         setMode={setMode}
@@ -194,24 +169,31 @@ function Whiteboard() {
         ref={stageRef}
         width={stageWidth}
         height={stageHeight}
-        onContextMenu={(e: Konva.KonvaEventObject<PointerEvent>) => {
-          e.evt.preventDefault();
-        }}
         draggable
         onWheel={handleWheel}
-        onMouseup={handleMouseUp}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onTouchStart={handleMouseDown}
+        onTouchMove={handleMouseMove}
+        onTouchEnd={handleMouseUp}
+        onContextMenu={(e) => e.evt.preventDefault()}
       >
         <Layer
-          width={canvasWidth}
-          height={canvasHeight}
-          clipWidth={canvasWidth}
-          clipHeight={canvasHeight}
-          onMouseDown={handleMouseDown}
-          onMousemove={handleMouseMove}
+          width={CANVAS_SIZE.width}
+          height={CANVAS_SIZE.height}
+          clipWidth={CANVAS_SIZE.width}
+          clipHeight={CANVAS_SIZE.height}
         >
-          <Rect width={canvasWidth} height={canvasHeight} fill={"white"}></Rect>
-          {lines.map(toKonvaLine)}
-          {currentLine && toKonvaLine(currentLine, lines.length - 1)}
+          <Rect
+            width={CANVAS_SIZE.width}
+            height={CANVAS_SIZE.height}
+            fill={"white"}
+          ></Rect>
+          {lines.map((line, i) => (
+            <WhiteboardLine key={i} line={line} />
+          ))}
+          {currentLine && <WhiteboardLine line={currentLine} />}
         </Layer>
       </Stage>
     </div>

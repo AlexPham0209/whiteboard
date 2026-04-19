@@ -70,7 +70,7 @@ export const login = async (
 
   if (!username || !password)
     return next(new AppError("Username and password are required", 400));
-  
+
   try {
     const result = await getUser(username);
     const user_id = result.id;
@@ -82,7 +82,7 @@ export const login = async (
     if (same) {
       const accessToken = generateAccessToken(user);
       const refreshToken = generateRefreshToken(user);
-      
+
       res
         .status(200)
         .cookie("refresh_token", refreshToken, {

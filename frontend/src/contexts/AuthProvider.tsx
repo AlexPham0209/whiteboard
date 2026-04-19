@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { handleError } from "../utils";
 import { BACKEND_URL, connect, socket } from "../socket";
 import { AuthContext } from "./AuthContext";
@@ -14,6 +14,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const [error, setError] = useState<string>("");
   const navigate = useNavigate();
+  const location = useLocation();
 
   const login = async (username: string, password: string) => {
     try {
@@ -79,8 +80,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     setAccessToken(null);
     setUser("");
     localStorage.removeItem("access_token");
-    navigate("/login", { replace: true });
-  }, [navigate]);
+
+    if (location.pathname !== "/login" && location.pathname !== "/register")
+      navigate("/login", { replace: true });
+  }, [navigate, location]);
 
   const refreshToken = useCallback(async () => {
     try {
@@ -113,13 +116,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     else socket.disconnect();
   }, [accessToken]);
 
+  // Reset on page transition
+  useEffect(() => {
+    setError("");
+  }, [location]);
+
   // Socket.io events
   useEffect(() => {
     const handleDisconnect = () => {
       console.log("Socket disconnected");
       logout();
     };
-    
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handleConnectError = async (err: Error | any) => {
       console.log(
