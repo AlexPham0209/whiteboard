@@ -1,23 +1,40 @@
 import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { handleError } from "../utils";
+import { useLocation, useNavigate } from "react-router-dom";
+import { AppError, handleError } from "../utils";
 import { RoomContext } from "./RoomContext";
 import { BACKEND_URL, socket } from "../socket";
 import { useAuth } from "./AuthContext";
+import type { Line } from "../routes/whiteboard/line";
+import type { Member } from "../routes/whiteboard/Member";
 
 export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
   const [roomCode, setRoomCode] = useState<string | null>(
     sessionStorage.getItem("room_code"),
   );
-  const { token } = useAuth();
+  const { accessToken, refreshToken } = useAuth();
 
   const [error, setError] = useState<string>("");
+  const [isRoomJoined, setRoomJoined] = useState<boolean>(false);
+
+  // Room States
+  const [lines, setLines] = useState<Line[]>([]);
+  const [members, setMembers] = useState<Member[]>([]);
+
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const clearRoomState = () => {
+    sessionStorage.removeItem("room_code");
+    setRoomCode(null);
+    setRoomJoined(false);
+    setMembers([]);
+    setLines([]);
+  };
 
   const createRoom = async () => {
     try {
-      if (!token) throw new Error("Authentication token not found");
+      if (!accessToken) throw new Error("Authentication token not found");
 
       // Creating room
       console.log("Creating room...");
@@ -26,7 +43,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
         {},
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${accessToken}`,
           },
 
           validateStatus: (status: number) => {
@@ -35,7 +52,11 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
         },
       );
 
-      if (!response.data.success) throw new Error("Unauthorized");
+      if (!response.data.success) {
+        if (response.status === 401) {
+          throw new Error("Unauthorized: Please log in again");
+        }
+      }
       if (!response.data.room_code) throw new Error("Room code not received");
 
       console.log(
@@ -46,17 +67,17 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       if (!socket.connected) throw new Error("Socket is not connected");
 
       // Join rooms automatically after creating
-      sessionStorage.setItem("room_code", response.data.room_code);
-      setRoomCode(response.data.room_code);
+      if (socket.connected && !isRoomJoined) joinRoom(response.data.room_code);
     } catch (error) {
       handleError(error, setError);
+
+      if (error instanceof AppError && error.status === 401)
+        await refreshToken();
     }
   };
 
   const leaveRoom = useCallback(() => {
-    sessionStorage.removeItem("room_code");
-    setRoomCode(null);
-    setError("");
+    clearRoomState();
 
     socket.emit("leave_room", (res: { success: boolean; message?: string }) => {
       if (!res.success) {
@@ -67,57 +88,73 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       console.log("Left room successfully");
     });
 
-    if (window.location.pathname === "/draw")
-      navigate(token ? "/join" : "/login", { replace: true });
-  }, [navigate, token]);
+    if (location.pathname === "/draw")
+      navigate(accessToken ? "/join" : "/login", { replace: true });
+  }, [navigate, accessToken, location]);
 
   const joinRoom = useCallback(
     (roomCode: string) => {
-      if (!socket.connected) return;
+      if (!socket.connected || isRoomJoined) return;
 
       // Join room after creating
       socket.emit(
         "join_room",
         roomCode,
-        (res: { success: boolean; message?: string }) => {
+        (res: {
+          success: boolean;
+          message: string;
+          lines?: Line[];
+          members?: Member[];
+        }) => {
           if (!res.success) {
             handleError(
               new Error(res.message || "Failed to join room"),
               setError,
             );
-            setRoomCode(null);            
+            clearRoomState();
             return;
           }
 
           console.log("Joined room successfully after creation");
           sessionStorage.setItem("room_code", roomCode);
+          setRoomJoined(true);
+
+          // Set room states
           setRoomCode(roomCode);
+          setLines(res.lines || []);
+          setMembers(res.members || []);
+
+          // Go to whiteboard
           navigate("/draw", { replace: true });
         },
       );
     },
-    [navigate],
+    [isRoomJoined, navigate],
   );
+
+  // Handle access token
+  useEffect(() => {
+    if (!accessToken) clearRoomState();
+  }, [accessToken]);
+
+  // Reset on page transition
+  useEffect(() => {
+    setError("");
+  }, [location]);
 
   useEffect(() => {
     const onConnect = () => {
-      if (roomCode) joinRoom(roomCode);
+      if (roomCode && !isRoomJoined) joinRoom(roomCode);
     };
-
-    if (!token) {
-      sessionStorage.removeItem("room_code");
-      setRoomCode(null);
-    }
 
     const onConnectError = (err: Error) => {
       console.log("Connection error:", err);
       handleError(err, setError);
-      sessionStorage.removeItem("room_code");
-      setRoomCode(null);
+      clearRoomState();
     };
 
     // If already connected, attempt to join room immediately (e.g., on page refresh)
-    if (socket && socket.connected && roomCode) joinRoom(roomCode);
+    if (socket.connected && roomCode && !isRoomJoined) joinRoom(roomCode);
 
     socket.on("connect", onConnect);
     socket.on("connect_error", onConnectError);
@@ -126,11 +163,21 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       socket.off("connect");
       socket.off("connect_error");
     };
-  }, [joinRoom, roomCode, token]);
+  }, [joinRoom, roomCode, isRoomJoined]);
 
   return (
     <RoomContext.Provider
-      value={{ roomCode, error, createRoom, joinRoom, leaveRoom }}
+      value={{
+        roomCode,
+        error,
+        createRoom,
+        joinRoom,
+        leaveRoom,
+        members,
+        setMembers,
+        lines,
+        setLines,
+      }}
     >
       {children}
     </RoomContext.Provider>

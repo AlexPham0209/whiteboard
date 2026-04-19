@@ -3,14 +3,14 @@ import { useRoom } from "../contexts/RoomContext";
 
 export default function Join() {
   const [roomCode, setRoomCode] = useState<string>("");
-  const { joinRoom, error } = useRoom();
+  const { error, joinRoom } = useRoom();
   const [loading, setLoading] = useState(false);
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await joinRoom(roomCode);
+      joinRoom(roomCode);
     } finally {
       setLoading(false);
     }

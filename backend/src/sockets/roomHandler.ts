@@ -1,8 +1,9 @@
-import { getCanvas } from "@/models/lines.js";
+import { getCanvas, type Line } from "@/models/lines.js";
 import {
   addMember,
   getMember,
   getRoomFromMember,
+  memberExists,
   removeMember,
   removeMemberFromUserID,
 } from "../models/members.js";
@@ -17,13 +18,15 @@ import { getRoomFromUser } from "@/models/users.js";
 const registerRoomHandlers = (io: Server, socket: Socket) => {
   const joinRoom = async (
     room_code: string,
-    callback: (response: { success: boolean; message?: string }) => void,
+    callback: (response: {
+      success: boolean;
+      message?: string;
+      lines?: Line[];
+      members?: any[];
+    }) => void,
   ) => {
     try {
       if (!socket.data.user_id) throw new Error("Missing user ID");
-
-      // Automatically leaves the room it is currently in (if any) before joining the new room
-      await leaveRoom();
 
       // If room doesn't exist, return error
       const exists = await roomExistsFromCode(room_code);
@@ -44,12 +47,11 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
 
       // Update members list for all members in room
       socket.broadcast.to(socket.data.room_id).emit("update_members", members);
-
-      callback({ success: true, message: "Joined room successfully" });
-      socket.emit("init_state", {
+      callback({
+        success: true,
+        message: "Joined room successfully",
         lines: lines,
         members: members,
-        code: room_code,
       });
     } catch (err) {
       if (err instanceof Error)

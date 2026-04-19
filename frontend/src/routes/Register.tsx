@@ -35,18 +35,14 @@ export default function Register() {
             <h2 className="text-3xl font-bold text-white tracking-tight">
               Create Account
             </h2>
-            <p className="text-white text-sm mt-1">
-              Join Whiteboard today
-            </p>
+            <p className="text-white text-sm mt-1">Join Whiteboard today</p>
           </div>
         </div>
 
         <form onSubmit={onSubmit} className="p-8 space-y-5">
           {/* Username Field */}
           <div className="space-y-1.5">
-            <label className="input-label">
-              Username
-            </label>
+            <label className="input-label">Username</label>
             <input
               name="username"
               value={username}
@@ -60,9 +56,7 @@ export default function Register() {
 
           {/* Password Field */}
           <div className="space-y-1.5">
-            <label className="input-label">
-              Password
-            </label>
+            <label className="input-label">Password</label>
             <input
               name="password"
               value={password}
@@ -90,11 +84,7 @@ export default function Register() {
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="button"
-          >
+          <button type="submit" disabled={loading} className="button">
             {loading ? "Creating account..." : "Get Started"}
           </button>
 

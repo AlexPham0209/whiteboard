@@ -1,16 +1,24 @@
-import { createUser, getUser, userExists } from "../models/users.js";
+import {
+  authenticateUser,
+  createUser,
+  getUser,
+  userExists,
+} from "../models/users.js";
 import AppError from "../utils/error.js";
 import { type Request, type Response, type NextFunction } from "express";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
+import jwt, { type JwtPayload } from "jsonwebtoken";
+import { generateAccessToken, generateRefreshToken } from "@/utils/tokens.js";
 
 // Number of salt rounds for hashing
 const SALT_ROUNDS =
   process.env.SALT_ROUNDS !== undefined ? Number(process.env.SALT_ROUNDS) : 12;
 
 // JWT secrets
-const SECRET = process.env.SECRET;
-const { sign } = jwt;
+// console.log("JWT_SECRET:", process.env.JWT_SECRET);
+// console.log("JWT_REFRESH_SECRET:", process.env.JWT_REFRESH_SECRET);
+// console.log("JWT_EXPIRATION:", process.env.JWT_EXPIRATION);
+// console.log("JWT_REFRESH_EXPIRATION:", process.env.JWT_REFRESH_EXPIRATION);
 
 // Register
 export const register = async (
@@ -31,21 +39,21 @@ export const register = async (
 
     const hash = await bcrypt.hash(password, SALT_ROUNDS);
     const result = await createUser(username, hash);
+    const user = { userId: result.id, username: username };
 
-    const token = sign(
-      {
-        data: { userId: result.id, username: username },
-      },
-      SECRET!,
-      { expiresIn: "1h" },
-    );
+    // Generate tokens
+    const accessToken = generateAccessToken(user);
+    const refreshToken = generateRefreshToken(user);
 
-    res.cookie("sessionToken", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      maxAge: 60 * 60 * 1000, // 1 hour
-    });
-    res.status(200).json({ success: true, token: token });
+    res
+      .status(200)
+      .cookie("refresh_token", refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      })
+      .json({ success: true, accessToken: accessToken });
   } catch (err) {
     return next(err);
   }
@@ -69,21 +77,56 @@ export const login = async (
     const hashed_password = result.password;
 
     const same = await bcrypt.compare(password, hashed_password);
+    const user = { userId: user_id, username: username };
 
     if (same) {
-      const token = sign(
-        {
-          data: { userId: user_id, username: username },
-        },
-        SECRET!,
-        { expiresIn: "1h" },
-      );
+      const accessToken = generateAccessToken(user);
+      const refreshToken = generateRefreshToken(user);
 
-      res.status(200).json({ success: true, token: token });
+      res
+        .status(200)
+        .cookie("refresh_token", refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        })
+        .json({ success: true, accessToken: accessToken });
     } else {
       return next(new AppError("Invalid Username or Password", 401));
     }
   } catch (err) {
+    return next(err);
+  }
+};
+
+export const refreshToken = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const refreshToken = req.cookies.refresh_token;
+  if (!refreshToken) return next(new AppError("Missing refresh token", 401));
+
+  try {
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET!,
+    ) as JwtPayload;
+    const { userId, username } = decoded.data;
+
+    if (!userId || !username)
+      return next(new AppError("Missing token data", 401));
+
+    // const authenticated = await authenticateUser(userId, username);
+    // if (!authenticated)
+    //   return next(new AppError("Couldn't authenticate user", 401));
+
+    const user = { userId, username };
+    const newAccessToken = generateAccessToken(user);
+    res.status(200).json({ success: true, accessToken: newAccessToken });
+  } catch (err) {
+    console.log(err);
     return next(err);
   }
 };

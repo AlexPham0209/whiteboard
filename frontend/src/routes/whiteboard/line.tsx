@@ -1,27 +1,29 @@
+import { memo } from "react";
 import { Line } from "react-konva";
 
 export type DrawMode = "draw" | "erase";
 export type Color = "red" | "blue" | "black";
 
 export interface Line {
-  user_id: string | undefined;
+  user_id?: string;
   draw_mode: DrawMode;
   color: Color;
   brush_size: number;
   points: number[];
 }
 
-export const toKonvaLine = (line: Line, i: number) => {
+export const WhiteboardLine = memo(({ line }: { line: Line }) => {
   return (
     <Line
-      key={i}
       points={line.points}
-      stroke={line.draw_mode !== "erase" ? line.color : "white"}
+      stroke={line.color}
       strokeWidth={line.brush_size}
       tension={0.5}
       lineCap="round"
       lineJoin="round"
-      globalCompositeOperation={"source-over"}
+      globalCompositeOperation={
+        line.draw_mode === "erase" ? "destination-out" : "source-over"
+      }
     />
   );
-};
+});
