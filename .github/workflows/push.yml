@@ -37,5 +37,6 @@ jobs:
         env:
           NODE_ENV: production
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          SERVER_PORT: ${{ vars.SERVER_PORT }}
 
           
