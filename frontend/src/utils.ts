@@ -9,6 +9,8 @@ export class AppError extends Error {
   }
 }
 
+
+
 export const handleError = (
   error: unknown,
   setError:

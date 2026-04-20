@@ -32,66 +32,6 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
     setLines([]);
   };
 
-  const createRoom = async () => {
-    try {
-      if (!accessToken) throw new Error("Authentication token not found");
-
-      // Creating room
-      console.log("Creating room...");
-      const response = await axios.post(
-        `${BACKEND_URL}/api/create`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-
-          validateStatus: (status: number) => {
-            return status < 400;
-          },
-        },
-      );
-
-      if (!response.data.success) {
-        if (response.status === 401) {
-          throw new Error("Unauthorized: Please log in again");
-        }
-      }
-      if (!response.data.room_code) throw new Error("Room code not received");
-
-      console.log(
-        "Room created successfully, code: " + response.data.room_code,
-      );
-
-      // Ensures users is connected
-      if (!socket.connected) throw new Error("Socket is not connected");
-
-      // Join rooms automatically after creating
-      if (socket.connected && !isRoomJoined) joinRoom(response.data.room_code);
-    } catch (error) {
-      handleError(error, setError);
-
-      if (error instanceof AppError && error.status === 401)
-        await refreshToken();
-    }
-  };
-
-  const leaveRoom = useCallback(() => {
-    clearRoomState();
-
-    socket.emit("leave_room", (res: { success: boolean; message?: string }) => {
-      if (!res.success) {
-        handleError(new Error(res.message || "Failed to leave room"), setError);
-        return;
-      }
-
-      console.log("Left room successfully");
-    });
-
-    if (location.pathname === "/draw")
-      navigate(accessToken ? "/join" : "/login", { replace: true });
-  }, [navigate, accessToken, location]);
-
   const joinRoom = useCallback(
     (roomCode: string) => {
       if (!socket.connected || isRoomJoined) return;
@@ -132,10 +72,61 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
     [isRoomJoined, navigate],
   );
 
-  // Handle access token
-  useEffect(() => {
-    if (!accessToken) clearRoomState();
-  }, [accessToken]);
+  const createRoom = async () => {
+    try {
+      if (!accessToken) throw new Error("Authentication token not found");
+
+      // Creating room
+      console.log("Creating room...");
+      const response = await axios.post(
+        `${BACKEND_URL}/api/create`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+
+          validateStatus: (status: number) => {
+            return status < 500;
+          },
+        },
+      );
+
+      if (!response.data.success && response.status === 401) throw new AppError("Unauthorized: Please log in again", 401);
+      if (!response.data.room_code) throw new Error("Room code not received");
+      
+      console.log(
+        "Room created successfully, code: " + response.data.room_code,
+      );
+
+      // Ensures users is connected
+      if (!socket.connected) throw new Error("Socket is not connected");
+
+      // Join rooms automatically after creating
+      if (socket.connected && !isRoomJoined) joinRoom(response.data.room_code);
+    } catch (error) {
+      handleError(error, setError);
+
+      if (error instanceof AppError && error.status === 401)
+        await refreshToken();
+    }
+  };
+  
+  const leaveRoom = useCallback(() => {
+    clearRoomState();
+
+    socket.emit("leave_room", (res: { success: boolean; message?: string }) => {
+      if (!res.success) {
+        handleError(new Error(res.message || "Failed to leave room"), setError);
+        return;
+      }
+
+      console.log("Left room successfully");
+    });
+
+    if (location.pathname === "/draw")
+      navigate(accessToken ? "/join" : "/login", { replace: true });
+  }, [navigate, accessToken, location]);
 
   // Reset on page transition
   useEffect(() => {
@@ -147,10 +138,15 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       if (roomCode && !isRoomJoined) joinRoom(roomCode);
     };
 
-    const onConnectError = (err: Error) => {
-      console.log("Connection error:", err);
-      handleError(err, setError);
-      clearRoomState();
+    const onConnectError = async (err: Error) => {
+      try {
+        console.log("Connection error:", err);
+        handleError(err, setError);
+        await refreshToken();
+      } catch (error) {
+        console.log(error);
+        clearRoomState();
+      }
     };
 
     // If already connected, attempt to join room immediately (e.g., on page refresh)
@@ -163,7 +159,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       socket.off("connect");
       socket.off("connect_error");
     };
-  }, [joinRoom, roomCode, isRoomJoined]);
+  }, [joinRoom, roomCode, isRoomJoined, refreshToken]);
 
   return (
     <RoomContext.Provider

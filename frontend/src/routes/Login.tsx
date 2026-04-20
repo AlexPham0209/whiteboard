@@ -47,6 +47,7 @@ export default function Login() {
               name="password"
               value={password}
               onChange={(e) => setPassword(e.currentTarget.value)}
+              autoComplete="current-password"
               required
               placeholder="••••••••"
               className="input-field"
@@ -61,6 +62,16 @@ export default function Login() {
               "Sign In"
             )}
           </button>
+
+          <p className="text-center text-sm text-gray-500 mt-6">
+            Don't have an account?{" "}
+            <a
+              href="/register"
+              className="text-purple-600 font-semibold hover:underline"
+            >
+              Register
+            </a>
+          </p>
 
           {error && (
             <div className="text-center text-red-500 mt-4">{error}</div>

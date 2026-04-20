@@ -15,7 +15,7 @@ export default function Register() {
       alert("Passwords do not match!");
       return;
     }
-
+      
     setLoading(true);
     try {
       await register(username, password);
@@ -60,6 +60,7 @@ export default function Register() {
             <input
               name="password"
               value={password}
+              autoComplete="current-password"
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="••••••••"

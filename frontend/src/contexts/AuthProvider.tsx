@@ -101,11 +101,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (!response.data.success) throw new Error("Token refresh failed");
       if (!response.data.accessToken) throw new Error("Access token not found");
 
+      console.log("Refreshed");
       localStorage.setItem("access_token", response.data.accessToken);
       setAccessToken(response.data.accessToken);
+      setError("");
+
     } catch (error) {
-      console.log("Token refresh failed:", error);
       logout();
+      throw error;
     }
   }, [logout]);
 
@@ -136,10 +139,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (err.data && err.data.status === 401) {
         console.log("Unauthorized error, attempting token refresh");
-        await refreshToken();
+        try {
+          await refreshToken();
+        } catch (error) {
+          console.log(error);
+        }
+        
       } else {
         console.log("Non-authentication error, disconnecting socket");
-        socket.disconnect();
       }
     };
 
