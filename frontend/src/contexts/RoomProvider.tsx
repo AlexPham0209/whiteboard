@@ -117,7 +117,8 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const onDisconnect = () => {
-      leaveRoom();
+      if (isRoomJoined)
+        leaveRoom();
     };
 
     const onConnect = () => {

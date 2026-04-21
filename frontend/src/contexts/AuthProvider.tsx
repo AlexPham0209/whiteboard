@@ -70,7 +70,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setAccessToken(null);
       setUser("");
       localStorage.removeItem("access_token");
-
+      
       if (location.pathname !== "/login" && location.pathname !== "/register")
         navigate("/login", { replace: true });
     } catch (err) {
