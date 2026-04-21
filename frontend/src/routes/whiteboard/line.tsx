@@ -16,14 +16,11 @@ export const WhiteboardLine = memo(({ line }: { line: Line }) => {
   return (
     <Line
       points={line.points}
-      stroke={line.color}
+      stroke={line.draw_mode !== "erase" ? line.color : "white"}
       strokeWidth={line.brush_size}
       tension={0.5}
       lineCap="round"
       lineJoin="round"
-      globalCompositeOperation={
-        line.draw_mode === "erase" ? "destination-out" : "source-over"
-      }
     />
   );
 });

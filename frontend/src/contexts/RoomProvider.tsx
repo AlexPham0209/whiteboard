@@ -88,10 +88,6 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
         "Room created successfully, code: " + response.data.room_code,
       );
 
-      // Ensures users is connected
-      // if (!socket.connected) 
-      //   await connect();
-      
       // Join rooms automatically after creating
       setRoomCode(response.data.room_code);
       setRoomJoined(false);
@@ -126,21 +122,12 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       if (roomCode && !isRoomJoined) joinRoom(roomCode);
     };
 
-    const onConnectError = async (err: Error) => {
-      console.log("Connection error:", err);
-      handleError(err, setError);
-      await refreshToken();
-    };
-
     // If already connected, attempt to join room immediately (e.g., on page refresh)
     if (socket.connected && roomCode && !isRoomJoined) joinRoom(roomCode);
 
     socket.on("connect", onConnect);
-    socket.on("connect_error", onConnectError);
-
     return () => {
       socket.off("connect");
-      socket.off("connect_error");
     };
   }, [joinRoom, roomCode, isRoomJoined, refreshToken]);
 
