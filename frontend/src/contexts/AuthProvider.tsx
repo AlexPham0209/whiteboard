@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         {
           withCredentials: true,
           validateStatus: (status: number) => {
-            return status < 400;
+            return status < 500;
           },
         },
       );
@@ -56,6 +56,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         },
         {
           withCredentials: true,
+          validateStatus: (status: number) => {
+            return status < 500;
+          },
         },
       );
 
