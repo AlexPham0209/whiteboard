@@ -100,6 +100,26 @@ export const login = async (
   }
 };
 
+export const logout = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    console.log("Logout");
+    res
+      .status(200)
+      .clearCookie("refresh_token", {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+      })
+      .json({success: true, message: "Cookie cleared and logged out"})
+  } catch (err) {
+    next(err);
+  }
+};
+
 export const refreshToken = async (
   req: Request,
   res: Response,

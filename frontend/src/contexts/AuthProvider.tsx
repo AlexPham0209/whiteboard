@@ -24,12 +24,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           username: username,
           password: password,
         },
-        {
-          withCredentials: true,
-          validateStatus: (status: number) => {
-            return status < 500;
-          },
-        },
       );
 
       if (!response.data.success) throw new Error("Login failed");
@@ -42,7 +36,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       navigate("/create", { replace: true });
     } catch (err) {
       handleError(err, setError);
-      logout();
     }
   };
 
@@ -53,12 +46,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         {
           username: username,
           password: password,
-        },
-        {
-          withCredentials: true,
-          validateStatus: (status: number) => {
-            return status < 500;
-          },
         },
       );
 
@@ -72,32 +59,34 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       navigate("/create", { replace: true });
     } catch (error) {
       handleError(error, setError);
-      logout();
     }
   };
-
+  
   const logout = useCallback(async () => {
-    setAccessToken(null);
-    setUser("");
-    localStorage.removeItem("access_token");
+    try {
+      const response = await api.post(`/auth/logout`);
+      if (!response.data.success) throw new Error("Logout failed");
+      
+      setAccessToken(null);
+      setUser("");
+      localStorage.removeItem("access_token");
 
-    if (location.pathname !== "/login" && location.pathname !== "/register")
-      navigate("/login", { replace: true });
-  }, [navigate, location]);
+      if (location.pathname !== "/login" && location.pathname !== "/register")
+        navigate("/login", { replace: true });
+    } catch (err) {
+      handleError(err, setError);
+    }
+  }, [setUser, setAccessToken, location, navigate]);
 
   const refreshToken = useCallback(async () => {
     try {
       const response = await api.post(
-        `/auth/refresh`,
-        {},
-        {
-          withCredentials: true,
-        },
+        `/auth/refresh`
       );
 
       if (!response.data.success) throw new Error("Token refresh failed");
       if (!response.data.accessToken) throw new Error("Access token not found");
-
+      
       console.log("Refreshed");
       localStorage.setItem("access_token", response.data.accessToken);
       setAccessToken(response.data.accessToken);
@@ -106,10 +95,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return response.data.accessToken;
     } catch (error) {
       console.log(error);
-      logout();
       return null;
     }
-  }, [logout]);
+  }, []);
 
   // Auto-connect socket if token exists on initial load or when token changes
   useEffect(() => {
@@ -127,6 +115,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const handleDisconnect = () => {
       console.log("Socket disconnected");
+      logout();
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -152,6 +141,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [logout, refreshToken]);
 
   // Handles refresh token upon 401 request errors
+  // TODO: Create component just for the Axios Interceptor?
   useLayoutEffect(() => {
     const requestIntercept = api.interceptors.request.use((config) => {
       if (!config.headers.Authorization && accessToken) {
@@ -164,17 +154,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       (response) => response,
       async (error) => {
         const prevRequest = error?.config;
+        
+        // Doesn't trigger refresh for requests to the refresh endpoint
+        if (prevRequest?.url === "/auth/refresh") 
+          return Promise.reject(error);
+    
         if (error?.response?.status === 401 && !prevRequest?.sent) {
           prevRequest.sent = true; // prevent infinite loops
 
           try {
             const newAccessToken = await refreshToken();
+            if (!newAccessToken) throw error;
 
             // Retry original request
             prevRequest.headers.Authorization = `Bearer ${newAccessToken}`;
             return api(prevRequest);
+            
           } catch (refreshError) {
-            logout();
+            await logout();
             return Promise.reject(refreshError);
           }
         }

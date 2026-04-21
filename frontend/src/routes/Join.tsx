@@ -15,7 +15,7 @@ export default function Join() {
       setLoading(false);
     }
   };
-
+  
   return (
     <div className="background">
       <form
