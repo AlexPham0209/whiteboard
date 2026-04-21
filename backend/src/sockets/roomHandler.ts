@@ -77,19 +77,19 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
       const members = await getMembersInRoom(room_id);
 
       // Delete if no members left in room
-      if (members.length === 0) {
-        // Give the user 5 seconds to reconnect before deleting the room
-        setTimeout(async () => {
-          const members = await getMembersInRoom(room_id);
+      // if (members.length === 0) {
+      //   // Give the user 5 seconds to reconnect before deleting the room
+      //   setTimeout(async () => {
+      //     const members = await getMembersInRoom(room_id);
 
-          if (members.length === 0) {
-            await deleteRoom(room_id);
-            console.log("Deleted empty room with ID:", room_id);
-          }
-        }, 5000);
+      //     if (members.length === 0) {
+      //       await deleteRoom(room_id);
+      //       console.log("Deleted empty room with ID:", room_id);
+      //     }
+      //   }, 5000);
 
-        return;
-      }
+      //   return;
+      // }
 
       socket.broadcast.to(room_id).emit("update_members", members);
     } catch (err) {

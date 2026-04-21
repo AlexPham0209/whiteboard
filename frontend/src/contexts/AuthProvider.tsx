@@ -1,9 +1,9 @@
-import axios from "axios";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { handleError } from "../utils";
-import { BACKEND_URL, connect, socket } from "../socket";
+import { connect, socket } from "../socket";
 import { AuthContext } from "./AuthContext";
+import api from "../axiosApi";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<string>("");
@@ -18,8 +18,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await axios.post(
-        `${BACKEND_URL}/auth/login`,
+      const response = await api.post(
+        `/auth/login`,
         {
           username: username,
           password: password,
@@ -48,17 +48,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const register = async (username: string, password: string) => {
     try {
-      const response = await axios.post(
-        `${BACKEND_URL}/auth/register`,
+      const response = await api.post(
+        `/auth/register`,
         {
           username: username,
           password: password,
         },
         {
           withCredentials: true,
-          validateStatus: (status: number) => {
-            return status < 400;
-          },
         },
       );
 
@@ -87,14 +84,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const refreshToken = useCallback(async () => {
     try {
-      const response = await axios.post(
-        `${BACKEND_URL}/auth/refresh`,
+      const response = await api.post(
+        `/auth/refresh`,
         {},
         {
           withCredentials: true,
-          validateStatus: (status: number) => {
-            return status < 400;
-          },
         },
       );
 
@@ -105,10 +99,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.setItem("access_token", response.data.accessToken);
       setAccessToken(response.data.accessToken);
       setError("");
+      
+      return response.data.accessToken;
 
     } catch (error) {
+      console.log(error);
       logout();
-      throw error;
+      return null;
     }
   }, [logout]);
 
@@ -118,7 +115,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (accessToken) connect();
     else socket.disconnect();
   }, [accessToken]);
-
+  
   // Reset on page transition
   useEffect(() => {
     setError("");
@@ -128,7 +125,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const handleDisconnect = () => {
       console.log("Socket disconnected");
-      logout();
+      // logout();
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -139,12 +136,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       if (err.data && err.data.status === 401) {
         console.log("Unauthorized error, attempting token refresh");
-        try {
-          await refreshToken();
-        } catch (error) {
-          console.log(error);
-        }
-        
+        await refreshToken();
       } else {
         console.log("Non-authentication error, disconnecting socket");
       }
@@ -157,6 +149,45 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       socket.off("connect_error", handleConnectError);
     };
   }, [logout, refreshToken]);
+
+  // Handles refresh token upon 401 request errors
+  useLayoutEffect(() => {
+    const requestIntercept = api.interceptors.request.use((config) => {
+      if (!config.headers.Authorization && accessToken) {
+        config.headers.Authorization = `Bearer ${accessToken}`;
+      }
+      return config;
+    });
+
+    const responseIntercept = api.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const prevRequest = error?.config;
+        if (error?.response?.status === 401 && !prevRequest?.sent) {
+          prevRequest.sent = true; // prevent infinite loops
+
+          try {
+            const newAccessToken = await refreshToken();
+            
+            // Retry original request
+            prevRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+            return api(prevRequest); 
+              
+          } catch (refreshError) {
+            logout();
+            return Promise.reject(refreshError);
+          }
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    // Clean up interceptors if the component unmounts
+    return () => {
+      api.interceptors.request.eject(requestIntercept);
+      api.interceptors.response.eject(responseIntercept);
+    };
+  }, [accessToken, logout, refreshToken]);
 
   return (
     <AuthContext.Provider

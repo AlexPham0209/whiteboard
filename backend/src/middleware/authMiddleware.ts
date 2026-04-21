@@ -47,7 +47,7 @@ export const authenticateSocket = async (
   try {
     const decoded = jwt.verify(token, SECRET) as JwtPayload;
     const { userId, username } = decoded.data;
-
+    
     if (!userId || !username)
       return next(createExtendedError("Missing token data", 401));
 

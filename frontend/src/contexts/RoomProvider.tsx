@@ -1,12 +1,12 @@
-import axios from "axios";
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { AppError, handleError } from "../utils";
+import { handleError } from "../utils";
 import { RoomContext } from "./RoomContext";
-import { BACKEND_URL, socket } from "../socket";
+import { socket } from "../socket";
 import { useAuth } from "./AuthContext";
 import type { Line } from "../routes/whiteboard/line";
 import type { Member } from "../routes/whiteboard/Member";
+import api from "../axiosApi";
 
 export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
   const [roomCode, setRoomCode] = useState<string | null>(
@@ -78,37 +78,25 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Creating room
       console.log("Creating room...");
-      const response = await axios.post(
-        `${BACKEND_URL}/api/create`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-
-          validateStatus: (status: number) => {
-            return status < 500;
-          },
-        },
+      const response = await api.post(
+        `/api/create`,
       );
-
-      if (!response.data.success && response.status === 401) throw new AppError("Unauthorized: Please log in again", 401);
+    
       if (!response.data.room_code) throw new Error("Room code not received");
-      
+
       console.log(
         "Room created successfully, code: " + response.data.room_code,
       );
 
       // Ensures users is connected
-      if (!socket.connected) throw new Error("Socket is not connected");
-
+      // if (!socket.connected) 
+      //   await connect();
+      
       // Join rooms automatically after creating
-      if (socket.connected && !isRoomJoined) joinRoom(response.data.room_code);
+      setRoomCode(response.data.room_code);
+      setRoomJoined(false);
     } catch (error) {
       handleError(error, setError);
-
-      if (error instanceof AppError && error.status === 401)
-        await refreshToken();
     }
   };
   
@@ -139,14 +127,9 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const onConnectError = async (err: Error) => {
-      try {
-        console.log("Connection error:", err);
-        handleError(err, setError);
-        await refreshToken();
-      } catch (error) {
-        console.log(error);
-        clearRoomState();
-      }
+      console.log("Connection error:", err);
+      handleError(err, setError);
+      await refreshToken();
     };
 
     // If already connected, attempt to join room immediately (e.g., on page refresh)
