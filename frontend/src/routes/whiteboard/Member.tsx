@@ -5,7 +5,7 @@ export interface Member {
 
 export function MemberList({ members }: { members: Member[] }) {
   return (
-    <div className="absolute flex flex-col right-10 t-0 m-10 z-10 text-2xl font-bold text-black">
+    <div className="flex flex-col items-end text-2xl font-bold text-black">
       {members.map(Member)}
     </div>
   );

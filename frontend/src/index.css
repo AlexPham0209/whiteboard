@@ -24,7 +24,7 @@
 
   .exit-button {
     @apply bg-red-500 hover:bg-red-600 text-white font-bold p-4 rounded-2xl 
-    transition-all transform active:scale-95 absolute top-5 left-20 -translate-x-1/2 z-10;
+    transition-all transform active:scale-95;
   }
 }
 

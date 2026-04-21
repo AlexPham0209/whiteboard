@@ -118,6 +118,10 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
   }, [location]);
 
   useEffect(() => {
+    const onDisconnect = () => {
+      leaveRoom();
+    };
+
     const onConnect = () => {
       if (roomCode && !isRoomJoined) joinRoom(roomCode);
     };
@@ -126,10 +130,12 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
     if (socket.connected && roomCode && !isRoomJoined) joinRoom(roomCode);
 
     socket.on("connect", onConnect);
+    socket.on("disconnect", onDisconnect);
     return () => {
       socket.off("connect");
+      socket.off("disconnect");
     };
-  }, [joinRoom, roomCode, isRoomJoined, refreshToken]);
+  }, [joinRoom, roomCode, isRoomJoined, refreshToken, leaveRoom]);
 
   return (
     <RoomContext.Provider

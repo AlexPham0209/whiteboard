@@ -149,11 +149,16 @@ function Whiteboard() {
 
   return (
     <div className="w-screen h-screen flex justify-center">
-      <button className="exit-button" onClick={leaveRoom}>
-        Leave Room
-      </button>
+      <div className="absolute w-full top-0 z-10 p-5 flex flex-row items-start justify-between">
+        <button className="exit-button" onClick={leaveRoom}>
+          Leave Room
+        </button>
 
-      <RoomCode roomCode={roomCode ? roomCode : ""} />
+        <RoomCode roomCode={roomCode ? roomCode : ""} />
+        
+        <MemberList members={members} />
+      </div>
+      
 
       <Palette
         mode={mode}
@@ -163,7 +168,7 @@ function Whiteboard() {
         setBrushSize={setBrushSize}
       />
 
-      <MemberList members={members} />
+      
 
       <Stage
         ref={stageRef}

@@ -128,7 +128,6 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     const handleDisconnect = () => {
       console.log("Socket disconnected");
-      // logout();
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -175,7 +174,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             // Retry original request
             prevRequest.headers.Authorization = `Bearer ${newAccessToken}`;
             return api(prevRequest); 
-              
+            
           } catch (refreshError) {
             logout();
             return Promise.reject(refreshError);
