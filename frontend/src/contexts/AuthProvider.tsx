@@ -102,9 +102,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.setItem("access_token", response.data.accessToken);
       setAccessToken(response.data.accessToken);
       setError("");
-      
-      return response.data.accessToken;
 
+      return response.data.accessToken;
     } catch (error) {
       console.log(error);
       logout();
@@ -118,7 +117,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     if (accessToken) connect();
     else socket.disconnect();
   }, [accessToken]);
-  
+
   // Reset on page transition
   useEffect(() => {
     setError("");
@@ -170,18 +169,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
           try {
             const newAccessToken = await refreshToken();
-            
+
             // Retry original request
             prevRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-            return api(prevRequest); 
-            
+            return api(prevRequest);
           } catch (refreshError) {
             logout();
             return Promise.reject(refreshError);
           }
         }
         return Promise.reject(error);
-      }
+      },
     );
 
     // Clean up interceptors if the component unmounts

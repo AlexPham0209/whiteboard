@@ -78,10 +78,8 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Creating room
       console.log("Creating room...");
-      const response = await api.post(
-        `/api/create`,
-      );
-    
+      const response = await api.post(`/api/create`);
+
       if (!response.data.room_code) throw new Error("Room code not received");
 
       console.log(
@@ -95,7 +93,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       handleError(error, setError);
     }
   };
-  
+
   const leaveRoom = useCallback(() => {
     clearRoomState();
 

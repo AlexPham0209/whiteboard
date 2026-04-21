@@ -136,10 +136,9 @@ function Whiteboard() {
       y: (pointer.y - stage.y()) / oldScale,
     };
 
-
     const direction = e.evt.deltaY > 0 ? -1 : 1;
     const newScale = direction > 0 ? oldScale * SCALE_BY : oldScale / SCALE_BY;
-      
+
     stage.scale({ x: newScale, y: newScale });
     stage.position({
       x: pointer.x - mousePointTo.x * newScale,
@@ -149,16 +148,15 @@ function Whiteboard() {
 
   return (
     <div className="w-screen h-screen flex justify-center">
-      <div className="absolute w-full top-0 z-10 p-5 flex flex-row items-start justify-between">
-        <button className="exit-button" onClick={leaveRoom}>
+      <div className="absolute w-full top-0 z-10 p-5 flex flex-row items-start justify-between pointer-events-none">
+        <button className="exit-button pointer-events-auto" onClick={leaveRoom}>
           Leave Room
         </button>
 
         <RoomCode roomCode={roomCode ? roomCode : ""} />
-        
+
         <MemberList members={members} />
       </div>
-      
 
       <Palette
         mode={mode}
@@ -167,8 +165,6 @@ function Whiteboard() {
         setColor={setColor}
         setBrushSize={setBrushSize}
       />
-
-      
 
       <Stage
         ref={stageRef}

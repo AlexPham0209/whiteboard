@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useRoom } from "../contexts/RoomContext";
 
-
 export default function Create() {
   const [roomName, setRoomName] = useState<string>("");
   const { createRoom, error } = useRoom();

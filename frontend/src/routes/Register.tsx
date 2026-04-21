@@ -15,7 +15,7 @@ export default function Register() {
       alert("Passwords do not match!");
       return;
     }
-      
+
     setLoading(true);
     try {
       await register(username, password);
