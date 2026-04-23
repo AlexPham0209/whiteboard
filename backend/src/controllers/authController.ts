@@ -114,7 +114,7 @@ export const logout = async (
         secure: process.env.NODE_ENV === "production",
         sameSite: "strict",
       })
-      .json({success: true, message: "Cookie cleared and logged out"})
+      .json({ success: true, message: "Cookie cleared and logged out" });
   } catch (err) {
     next(err);
   }

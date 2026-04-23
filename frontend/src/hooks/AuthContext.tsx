@@ -7,7 +7,7 @@ interface AuthProps {
   isAuthenticated: boolean;
   login(username: string, password: string): void;
   register(username: string, password: string): void;
-  refreshToken(): void;
+  refreshToken(): Promise<string>;
   logout(): void;
 }
 
@@ -19,7 +19,7 @@ export const AuthContext = createContext<AuthProps>({
   login: async () => {},
   register: async () => {},
   logout: async () => {},
-  refreshToken: async () => {},
+  refreshToken: async () => "",
 });
 
 export const useAuth = () => {

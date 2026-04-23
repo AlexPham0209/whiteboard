@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../hooks/AuthContext";
 
 export default function Login() {
   const [username, setUsername] = useState<string>("");
@@ -16,7 +16,7 @@ export default function Login() {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="background">
       <div className="max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">

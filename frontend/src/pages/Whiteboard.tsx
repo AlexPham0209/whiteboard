@@ -1,17 +1,17 @@
 import Konva from "konva";
 import { useEffect, useRef, useState } from "react";
 import { Stage, Layer, Rect } from "react-konva";
-import { socket } from "../../socket.ts";
+import { socket } from "../utils/socket.ts";
 import {
   WhiteboardLine,
   type Color,
   type DrawMode,
   type Line,
-} from "./line.tsx";
-import { Palette } from "./Palette.tsx";
-import { RoomCode } from "./RoomCode.tsx";
-import { MemberList, type Member } from "./Member.tsx";
-import { useRoom } from "../../contexts/RoomContext.tsx";
+} from "../components/whiteboard/line.tsx";
+import { Palette } from "../components/whiteboard/Palette.tsx";
+import { RoomCode } from "../components/whiteboard/RoomCode.tsx";
+import { MemberList, type Member } from "../components/whiteboard/Member.tsx";
+import { useRoom } from "../hooks/RoomContext.tsx";
 
 const CANVAS_SIZE = { width: 5000, height: 2500 };
 const SCALE_BY = 1.1;

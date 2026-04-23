@@ -4,8 +4,8 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import type { Line } from "../routes/whiteboard/line";
-import type { Member } from "../routes/whiteboard/Member";
+import type { Line } from "../components/whiteboard/line";
+import type { Member } from "../components/whiteboard/Member";
 
 interface RoomProps {
   roomCode: string | null;

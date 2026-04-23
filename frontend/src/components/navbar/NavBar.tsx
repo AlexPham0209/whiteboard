@@ -1,5 +1,5 @@
-import { useAuth } from "../contexts/AuthContext";
-import { useRoom } from "../contexts/RoomContext";
+import { useAuth } from "../../hooks/AuthContext";
+import { useRoom } from "../../hooks/RoomContext";
 import { NavLink } from "./NavLink";
 
 export default function NavBar() {

@@ -1,18 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { handleError } from "../utils";
+import { handleError } from "../utils/utils";
 import { RoomContext } from "./RoomContext";
-import { socket } from "../socket";
+import { socket } from "../utils/socket";
 import { useAuth } from "./AuthContext";
-import type { Line } from "../routes/whiteboard/line";
-import type { Member } from "../routes/whiteboard/Member";
-import api from "../axiosApi";
+import type { Line } from "../components/whiteboard/line";
+import type { Member } from "../components/whiteboard/Member";
+import api from "../utils/axiosApi";
 
 export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
   const [roomCode, setRoomCode] = useState<string | null>(
     sessionStorage.getItem("room_code"),
   );
-  const { accessToken, refreshToken } = useAuth();
+  const { accessToken } = useAuth();
 
   const [error, setError] = useState<string>("");
   const [isRoomJoined, setRoomJoined] = useState<boolean>(false);
@@ -117,8 +117,7 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     const onDisconnect = () => {
-      if (isRoomJoined)
-        leaveRoom();
+      if (isRoomJoined) leaveRoom();
     };
 
     const onConnect = () => {
@@ -134,7 +133,24 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
       socket.off("connect");
       socket.off("disconnect");
     };
-  }, [joinRoom, roomCode, isRoomJoined, refreshToken, leaveRoom]);
+  }, [joinRoom, roomCode, isRoomJoined, leaveRoom]);
+
+  // useEffect(() => {
+  //   const localChanged = async () => {
+  //     if (localStorage.getItem('access_token'))
+  //       return;
+
+  //     const token = await refreshToken();
+  //     if (!token)
+  //       logout();
+  //   };
+
+  //   window.addEventListener('storage', localChanged);
+
+  //   return () => {
+  //     window.removeEventListener('storage', localChanged);
+  //   }
+  // }, [refreshToken, logout]);
 
   return (
     <RoomContext.Provider

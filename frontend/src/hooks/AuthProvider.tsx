@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { handleError } from "../utils";
-import { connect, socket } from "../socket";
+import { handleError } from "../utils/utils";
+import { connect, socket } from "../utils/socket";
 import { AuthContext } from "./AuthContext";
-import api from "../axiosApi";
+import api from "../utils/axiosApi";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<string>("");
@@ -18,13 +18,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = async (username: string, password: string) => {
     try {
-      const response = await api.post(
-        `/auth/login`,
-        {
-          username: username,
-          password: password,
-        },
-      );
+      const response = await api.post(`/auth/login`, {
+        username: username,
+        password: password,
+      });
 
       if (!response.data.success) throw new Error("Login failed");
       if (!response.data.accessToken) throw new Error("Access token not found");
@@ -41,13 +38,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const register = async (username: string, password: string) => {
     try {
-      const response = await api.post(
-        `/auth/register`,
-        {
-          username: username,
-          password: password,
-        },
-      );
+      const response = await api.post(`/auth/register`, {
+        username: username,
+        password: password,
+      });
 
       if (!response.data.success) throw new Error("Registration failed");
       if (!response.data.accessToken) throw new Error("Access token not found");
@@ -61,16 +55,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       handleError(error, setError);
     }
   };
-  
+
   const logout = useCallback(async () => {
     try {
+      console.log("Logout");
       const response = await api.post(`/auth/logout`);
       if (!response.data.success) throw new Error("Logout failed");
-      
+
       setAccessToken(null);
       setUser("");
       localStorage.removeItem("access_token");
-      
+
       if (location.pathname !== "/login" && location.pathname !== "/register")
         navigate("/login", { replace: true });
     } catch (err) {
@@ -80,13 +75,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const refreshToken = useCallback(async () => {
     try {
-      const response = await api.post(
-        `/auth/refresh`
-      );
+      const response = await api.post(`/auth/refresh`);
 
       if (!response.data.success) throw new Error("Token refresh failed");
       if (!response.data.accessToken) throw new Error("Access token not found");
-      
+
       console.log("Refreshed");
       localStorage.setItem("access_token", response.data.accessToken);
       setAccessToken(response.data.accessToken);
@@ -98,6 +91,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return null;
     }
   }, []);
+
+  // When the access token is missing in local storage, we try to refresh the token and if we can't, we log out
+  useEffect(() => {
+    const localChanged = async () => {
+      if (localStorage.getItem("access_token")) return;
+
+      const token = await refreshToken();
+      if (!token) logout();
+    };
+
+    window.addEventListener("storage", localChanged);
+
+    return () => {
+      window.removeEventListener("storage", localChanged);
+    };
+  }, [refreshToken, logout]);
 
   // Auto-connect socket if token exists on initial load or when token changes
   useEffect(() => {
@@ -118,73 +127,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       logout();
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const handleConnectError = async (err: Error | any) => {
-      console.log(
-        `Connection error: ${err instanceof Error ? err.message : "Unknown error"}`,
-      );
-
-      if (err.data && err.data.status === 401) {
-        console.log("Unauthorized error, attempting token refresh");
-        await refreshToken();
-      } else {
-        console.log("Non-authentication error, disconnecting socket");
-      }
-    };
-
     socket.on("disconnect", handleDisconnect);
-    socket.on("connect_error", handleConnectError);
     return () => {
       socket.off("disconnect", handleDisconnect);
-      socket.off("connect_error", handleConnectError);
     };
   }, [logout, refreshToken]);
-
-  // Handles refresh token upon 401 request errors
-  // TODO: Create component just for the Axios Interceptor?
-  useLayoutEffect(() => {
-    const requestIntercept = api.interceptors.request.use((config) => {
-      if (!config.headers.Authorization && accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
-      }
-      return config;
-    });
-
-    const responseIntercept = api.interceptors.response.use(
-      (response) => response,
-      async (error) => {
-        const prevRequest = error?.config;
-        
-        // Doesn't trigger refresh for requests to the refresh endpoint
-        if (prevRequest?.url === "/auth/refresh") 
-          return Promise.reject(error);
-    
-        if (error?.response?.status === 401 && !prevRequest?.sent) {
-          prevRequest.sent = true; // prevent infinite loops
-
-          try {
-            const newAccessToken = await refreshToken();
-            if (!newAccessToken) throw error;
-
-            // Retry original request
-            prevRequest.headers.Authorization = `Bearer ${newAccessToken}`;
-            return api(prevRequest);
-            
-          } catch (refreshError) {
-            await logout();
-            return Promise.reject(refreshError);
-          }
-        }
-        return Promise.reject(error);
-      },
-    );
-
-    // Clean up interceptors if the component unmounts
-    return () => {
-      api.interceptors.request.eject(requestIntercept);
-      api.interceptors.response.eject(responseIntercept);
-    };
-  }, [accessToken, logout, refreshToken]);
 
   return (
     <AuthContext.Provider

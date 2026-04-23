@@ -8,18 +8,19 @@ import {
 } from "react-router-dom";
 
 // Socket & Contexts
-import { AuthProvider } from "./contexts/AuthProvider";
-import { useAuth } from "./contexts/AuthContext";
-import { RoomProvider } from "./contexts/RoomProvider";
-import { useRoom } from "./contexts/RoomContext";
+import { AuthProvider } from "./hooks/AuthProvider";
+import { useAuth } from "./hooks/AuthContext";
+import { RoomProvider } from "./hooks/RoomProvider";
+import { useRoom } from "./hooks/RoomContext";
 
 // Components
-import Register from "./routes/Register";
-import Login from "./routes/Login";
-import Create from "./routes/Create";
-import Whiteboard from "./routes/whiteboard/Whiteboard";
-import Join from "./routes/Join";
-import NavBar from "./components/NavBar";
+import Register from "./pages/Register";
+import Login from "./pages/Login";
+import Create from "./pages/Create";
+import Whiteboard from "./pages/Whiteboard";
+import Join from "./pages/Join";
+import NavBar from "./components/navbar/NavBar";
+import { RefreshHandler } from "./hooks/RefreshHandler";
 
 /**
  * Higher-Order Components for Route Protection
@@ -113,10 +114,12 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <RoomProvider>
-          <NavBar />
-          <Pages />
-        </RoomProvider>
+        <RefreshHandler>
+          <RoomProvider>
+            <NavBar />
+            <Pages />
+          </RoomProvider>
+        </RefreshHandler>
       </AuthProvider>
     </BrowserRouter>
   );

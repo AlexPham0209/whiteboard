@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRoom } from "../contexts/RoomContext";
+import { useRoom } from "../hooks/RoomContext";
 
 export default function Join() {
   const [roomCode, setRoomCode] = useState<string>("");
@@ -15,7 +15,7 @@ export default function Join() {
       setLoading(false);
     }
   };
-  
+
   return (
     <div className="background">
       <form

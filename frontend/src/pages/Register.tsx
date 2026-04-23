@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useAuth } from "../contexts/AuthContext";
+import { useAuth } from "../hooks/AuthContext";
 
 export default function Register() {
   const [username, setUsername] = useState<string>("");

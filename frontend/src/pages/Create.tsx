@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRoom } from "../contexts/RoomContext";
+import { useRoom } from "../hooks/RoomContext";
 
 export default function Create() {
   const [roomName, setRoomName] = useState<string>("");
