@@ -44,7 +44,7 @@ const registerRoomHandlers = (io: Server, socket: Socket) => {
       // Retrieving necessary resources
       const members = await getMembersInRoom(socket.data.room_id);
       const lines = await getCanvas(room_id);
-
+      
       // Update members list for all members in room
       socket.broadcast.to(socket.data.room_id).emit("update_members", members);
       callback({
