@@ -27,7 +27,7 @@ Whiteboard is a website where users can draw anything on a virtual whiteboard!
 
 ## Stack Overview
 
-For the frontend, we use the React Framework with several libraries such as Konva for Canvas and drawing functionality, and Materia UI for additional UI elements. The frontend communicates with the backend server using HTTP requests and Socket.io events.
+For the frontend, we use the React Framework with several libraries such as Konva for Canvas and drawing functionality, and Materia UI for additional UI elements. The frontend communicates with the backend server using HTTP requests (specifically using the Axios library) and Socket.io events.
 
 For the backend, we use Express.js to handle HTTP requests and Socket.io for realtime communication between different clients nad the server. We are also using node-postgres to establish a Postgres client, allowing our backend server to communicate with our Postgres database. Then finally, we use other libraries such as Bcrypt to hash passwords and jsonwebtoken for JWT implemention.
 
@@ -38,9 +38,9 @@ Finally, we are using PostgreSQL to store user data such as user information (us
 ## Backend
 
 ### HTTP
-We use HTTP requests to handle user authorization/authentication (login, registration, token refreshs) and some Whiteboard functionality, specifically creating new rooms.
+To handle user authorization/authentication (login, registration, token refreshs) and some Whiteboard functionality, specifically creating new rooms, clients can send HTTP requests to the backend.
 
-There are two routes: /auth and /api.
+There are two main routes: /auth and /api.
 
 Auth Route:
 * /login: Authenticates the user and sends an access and a refresh token.   
@@ -79,6 +79,29 @@ REST API Authentication:
 * Verifies the sent token using the JWT secret. 
 * Ensures that there is a username and user_id field attached to the token. 
 * If any of the pervious instructions fails, send a response with a 401 status. 
+
+## Frontend
+### Auth Context
+The Auth Context contains necessary states and functions needed for user authentication and authorization. 
+
+States: 
+* Username: 
+* accessToken: 
+
+Functions: 
+* login: Sends a POST request to /auth/login. If the request was successful, we set the access token to the token retrieved from the backend. 
+* register:
+* refreshToken:
+
+Effects: 
+*
+
+### Room Context
+
+### Refresh Handler
+If either an HTTP requests fails or a socket connection fails, we try to refresh the access token. 
+
+
 
 ## Database
 
