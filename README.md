@@ -50,12 +50,12 @@ Auth Route:
 Api Route
 * /create: Creates a new room and sends the room code to the client. 
 
-## Socket.io
+### Socket.io
 We use Socket.io events to handle real-time functionality in the Whiteboard room. This includes adding new lines, updating the current members list, joining rooms, etc. These events are divided among the canvas, member, and room handler. 
 
 Room Handler Events: 
 * join_room: Adds user to a room with the given room code. If the user is successfully added to a room, the room/member information is attached to the socket connection, the members list is updated for all clients in the room, and the canvas and member data is sent back to the client via an acknowledgement.
-* leave_room: User is removed from the room. Then, if the current room is empty for 5 seconds, then the room itself is deleted. 
+* leave_room: User is removed from the room. Then, if the current room is empty for 5 seconds, the room is deleted. 
 
 Canvas Handler Events:
 * get_canvas: Retrieves the current canvas from the database and sends it to the client.
@@ -64,8 +64,21 @@ Canvas Handler Events:
 Member Handler Events: 
 * update_members: Sends back the updated list of all members in the client's room. 
 
-## Authentication
+### Authentication
+We authenticate both socket connections and requests sent to the API route using authentication middleware functions.
 
+Socket.io Authentication: 
+* Checks if there exists an access token inside of socket.handshake.auth object. 
+* Verifies the sent token using the JWT secret. 
+* Ensures that there is a username and user_id field attached to the token. 
+* Attaches username and user_id to socket connection. 
+* If any of the previous instructions fails, stop the socket connection and send a connection error to the client. 
+
+REST API Authentication: 
+* Checks if there is a bearer token in the authorization header of the request. 
+* Verifies the sent token using the JWT secret. 
+* Ensures that there is a username and user_id field attached to the token. 
+* If any of the pervious instructions fails, send a response with a 401 status. 
 
 ## Database
 
