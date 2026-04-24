@@ -25,15 +25,47 @@ Whiteboard is a website where users can draw anything on a virtual whiteboard!
 
 ![Join](images/join.gif)
 
-## Stack
+## Stack Overview
 
-For the frontend, we are using the React Framework along with several libraries such as Konva and Materia UI.
+For the frontend, we use the React Framework with several libraries such as Konva for Canvas and drawing functionality, and Materia UI for additional UI elements. The frontend communicates with the backend server using HTTP requests and Socket.io events.
 
-For the backend, we are using Express.js along with Socket.io for realtime communication between different users.
+For the backend, we use Express.js to handle HTTP requests and Socket.io for realtime communication between different clients nad the server. We are also using node-postgres to establish a Postgres client, allowing our backend server to communicate with our Postgres database. Then finally, we use other libraries such as Bcrypt to hash passwords and jsonwebtoken for JWT implemention.
 
-Finally, we are using PostgreSQL to store data room information and line data.
+Finally, we are using PostgreSQL to store user data such as user information (usernames and hashed passwords), along with whiteboard data (rooms, lines, members, etc).
 
 ![Diagram showing how each component in stack communicates](images/whiteboard-diagram.png)
+
+## Backend
+
+### HTTP
+We use HTTP requests to handle user authorization/authentication (login, registration, token refreshs) and some Whiteboard functionality, specifically creating new rooms.
+
+There are two routes: /auth and /api.
+
+Auth Route:
+* /login: Authenticates the user and sends an access and a refresh token.   
+* /register: Creates a new user and sends an access and a refresh token.   
+* /refresh: Verifies the refresh token and sends a new access token.
+
+Api Route
+* /create: Creates a new room and sends the room code to the client. 
+
+## Socket.io
+We use Socket.io events to handle real-time functionality in the Whiteboard room. This includes adding new lines, updating the current members list, joining rooms, etc. These events are divided among the canvas, member, and room handler. 
+
+Room Handler Events: 
+* join_room: Adds user to a room with the given room code. If the user is successfully added to a room, the room/member information is attached to the socket connection, the members list is updated for all clients in the room, and the canvas and member data is sent back to the client via an acknowledgement.
+* leave_room: User is removed from the room. Then, if the current room is empty for 5 seconds, then the room itself is deleted. 
+
+Canvas Handler Events:
+* get_canvas: Retrieves the current canvas from the database and sends it to the client.
+* add_line: Add new line to the users in the clients's room. 
+
+Member Handler Events: 
+* update_members: Sends back the updated list of all members in the client's room. 
+
+## Authentication
+
 
 ## Database
 

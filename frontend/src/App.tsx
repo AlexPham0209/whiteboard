@@ -45,7 +45,7 @@ const RoomRoute = ({ children }: { children: ReactNode }) => {
 function Pages() {
   const location = useLocation();
   const { isAuthenticated } = useAuth();
-
+  
   return (
     <Routes location={location} key={location.pathname}>
       {/* Public/Guest Routes */}
