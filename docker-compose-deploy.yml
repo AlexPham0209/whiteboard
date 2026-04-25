@@ -17,6 +17,8 @@ services:
       - JWT_EXPIRATION=${JWT_EXPIRATION}
       - JWT_REFRESH_EXPIRATION=${JWT_REFRESH_EXPIRATION}
       - SALT_ROUNDS=${SALT_ROUNDS}
+    expose: 
+      - ${SERVER_PORT}
     depends_on:
       db:
         condition: service_healthy
@@ -31,6 +33,8 @@ services:
         - VITE_SERVER_PORT=${NGINX_PORT}
     environment:
       - CLIENT_PORT=${CLIENT_PORT}
+    expose: 
+      - ${CLIENT_PORT}
     depends_on:
       - backend
 
