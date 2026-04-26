@@ -37,7 +37,7 @@ jobs:
           JWT_EXPIRATION: ${{ vars.JWT_EXPIRATION }}
           JWT_REFRESH_EXPIRATION: ${{ vars.JWT_REFRESH_EXPIRATION }}
 
-  deploy:
+  build-and-push:
     name: Push Docker Images
     runs-on: ubuntu-latest
     environment: production
@@ -63,3 +63,36 @@ jobs:
           NODE_ENV: production
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           NGINX_PORT: ${{ vars.NGINX_PORT }}
+
+  deploy: 
+    name: Deploy to Remote Server
+    runs-on: ubuntu-latest
+    environment: production
+    needs: build-and-push
+
+    steps:
+      - name: Deploy to production server
+        uses: appleboy/ssh-action@v1
+        env: 
+          NODE_ENV: production
+          FRONTEND_PORT: ${{ vars.FRONTEND_PORT }}
+          BACKEND_PORT: ${{ vars.BACKEND_PORT }}
+          CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
+          SALT_ROUNDS: ${{ vars.SALT_ROUNDS }}
+          POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_PORT: ${{ vars.POSTGRES_PORT }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
+          JWT_EXPIRATION: ${{ vars.JWT_EXPIRATION }}
+          JWT_REFRESH_EXPIRATION: ${{ vars.JWT_REFRESH_EXPIRATION }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: NODE_ENV,FRONTEND_PORT,BACKEND_PORT,CORS_ORIGINS,SALT_ROUNDS,POSTGRES_HOST,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_PORT,JWT_SECRET,JWT_REFRESH_SECRET,JWT_EXPIRATION,JWT_REFRESH_EXPIRATION
+          script: |
+            echo "Deploying to $NODE_ENV"
+          
