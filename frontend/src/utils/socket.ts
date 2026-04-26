@@ -5,7 +5,7 @@ export const SOCKET_URL = import.meta.env.PROD
   ? `${import.meta.env.BASE_URL}`
   : `http://localhost:${PORT}`;
 
-export const socket = io(SOCKET_URL, { path: '/backend/socket.io/', autoConnect: false });
+export const socket = io(SOCKET_URL, { autoConnect: false });
 
 export const connect = () => {
   const token = localStorage.getItem("access_token");
