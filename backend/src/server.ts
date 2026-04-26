@@ -7,7 +7,7 @@ import registerMessageHandlers from "./sockets/messageHandler.js";
 import registerMemberHandlers from "./sockets/memberHandler.js";
 import { app, CORS_CONFIG } from "./app.js";
 
-export const PORT = process.env.SERVER_PORT;
+export const PORT = process.env.BACKEND_PORT;
 export const server = createServer(app);
 export const io = new Server(server, {
   cors: CORS_CONFIG,

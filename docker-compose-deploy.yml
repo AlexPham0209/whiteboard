@@ -5,7 +5,7 @@ services:
     image: ${DOCKERHUB_USERNAME}/whiteboard-backend:latest
     environment:
       - NODE_ENV=${NODE_ENV}
-      - SERVER_PORT=${SERVER_PORT}
+      - BACKEND_PORT=${BACKEND_PORT}
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
@@ -18,7 +18,7 @@ services:
       - JWT_REFRESH_EXPIRATION=${JWT_REFRESH_EXPIRATION}
       - SALT_ROUNDS=${SALT_ROUNDS}
     expose: 
-      - ${SERVER_PORT}
+      - ${BACKEND_PORT}
     depends_on:
       db:
         condition: service_healthy
@@ -29,12 +29,14 @@ services:
       context: ./frontend
       args:
         - NODE_ENV=${NODE_ENV}
-        - BASE_URL=${SERVER_URL}
+        - BASE_URL=${BACKEND_URL}
         - VITE_SERVER_PORT=${NGINX_PORT}
     environment:
-      - CLIENT_PORT=${CLIENT_PORT}
+      - FRONTEND_PORT=${FRONTEND_PORT}
     expose: 
-      - ${CLIENT_PORT}
+      - ${FRONTEND_PORT}
+    deploy:
+      replicas: ${FRONTEND_REPLICAS}
     depends_on:
       - backend
 
@@ -61,8 +63,8 @@ services:
     volumes:
       - ./nginx.conf.template:/etc/nginx/templates/default.conf.template:ro
     environment:
-      - CLIENT_PORT=${CLIENT_PORT}
-      - SERVER_PORT=${SERVER_PORT}
+      - FRONTEND_PORT=${FRONTEND_PORT}
+      - BACKEND_PORT=${BACKEND_PORT}
       - NGINX_PORT=${NGINX_PORT}
     restart: always
     depends_on:

@@ -46,10 +46,6 @@ app.use(CookieParser());
 app.use("/auth", authRoute);
 app.use("/api", apiRoute);
 
-app.get("/", (req, res) => {
-  res.send("BRUH");
-});
-
 // Custom Error Handling
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error(err.message);
