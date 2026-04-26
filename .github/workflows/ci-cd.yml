@@ -61,6 +61,7 @@ jobs:
           docker compose -f docker-compose-deploy.yml push
         env:
           NODE_ENV: production
+          BACKEND_URL: ${{ vars.BACKEND_URL }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           NGINX_PORT: ${{ vars.NGINX_PORT }}
 
