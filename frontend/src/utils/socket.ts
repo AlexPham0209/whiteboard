@@ -1,8 +1,9 @@
 import { io } from "socket.io-client";
 
-export const PORT = import.meta.env.VITE_SERVER_PORT;
+export const PORT = import.meta.env.VITE_BACKEND_PORT;
+console.log(import.meta.env.PROD);
 export const SOCKET_URL = import.meta.env.PROD
-  ? `${import.meta.env.BASE_URL}`
+  ? `${import.meta.env.VITE_BACKEND_URL}`
   : `http://localhost:${PORT}`;
 
 export const socket = io(SOCKET_URL, { 

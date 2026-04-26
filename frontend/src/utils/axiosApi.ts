@@ -1,7 +1,7 @@
 import axios from "axios";
-export const PORT = import.meta.env.VITE_SERVER_PORT;
+export const PORT = import.meta.env.VITE_BACKEND_PORT;
 export const BACKEND_URL = import.meta.env.PROD
-  ? `${import.meta.env.BASE_URL}/backend`
+  ? `${import.meta.env.VITE_BACKEND_URL}/backend`
   : `http://localhost:${PORT}/backend`;
 
 const api = axios.create({

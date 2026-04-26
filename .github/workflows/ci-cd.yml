@@ -62,8 +62,9 @@ jobs:
         env:
           NODE_ENV: production
           BACKEND_URL: ${{ vars.BACKEND_URL }}
-          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           NGINX_PORT: ${{ vars.NGINX_PORT }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          
 
   deploy: 
     name: Deploy to Remote Server
