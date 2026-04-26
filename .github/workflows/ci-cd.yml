@@ -24,7 +24,7 @@ jobs:
           ./scripts/test.sh
         env:
           NODE_ENV: testing
-          SERVER_PORT: ${{ vars.SERVER_PORT }}
+          BACKEND_PORT: ${{ vars.BACKEND_PORT }}
           CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
           SALT_ROUNDS: ${{ vars.SALT_ROUNDS }}
           POSTGRES_HOST: ${{ vars.POSTGRES_HOST }}
@@ -62,4 +62,4 @@ jobs:
         env:
           NODE_ENV: production
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          SERVER_PORT: ${{ vars.SERVER_PORT }}
+          NGINX_PORT: ${{ vars.NGINX_PORT }}
