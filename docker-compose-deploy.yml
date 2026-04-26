@@ -17,8 +17,6 @@ services:
       - JWT_EXPIRATION=${JWT_EXPIRATION}
       - JWT_REFRESH_EXPIRATION=${JWT_REFRESH_EXPIRATION}
       - SALT_ROUNDS=${SALT_ROUNDS}
-    expose: 
-      - ${BACKEND_PORT}
     deploy:
       replicas: ${BACKEND_REPLICAS:-1}
     depends_on:
@@ -35,8 +33,6 @@ services:
         - VITE_SERVER_PORT=${NGINX_PORT}
     environment:
       - FRONTEND_PORT=${FRONTEND_PORT}
-    expose: 
-      - ${FRONTEND_PORT}
     deploy:
       replicas: ${FRONTEND_REPLICAS:-1}
     depends_on:
