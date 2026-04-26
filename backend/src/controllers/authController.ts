@@ -44,7 +44,7 @@ export const register = async (
     // Generate tokens
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
-
+    
     res
       .status(200)
       .cookie("refresh_token", refreshToken, {
@@ -111,7 +111,7 @@ export const logout = async (
       .status(200)
       .clearCookie("refresh_token", {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: false,
         sameSite: "strict",
       })
       .json({ success: true, message: "Cookie cleared and logged out" });
