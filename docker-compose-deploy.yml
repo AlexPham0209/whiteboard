@@ -20,7 +20,7 @@ services:
     expose: 
       - ${BACKEND_PORT}
     deploy:
-      replicas: ${BACKEND_REPLICAS}
+      replicas: ${BACKEND_REPLICAS:-1}
     depends_on:
       db:
         condition: service_healthy
@@ -38,7 +38,7 @@ services:
     expose: 
       - ${FRONTEND_PORT}
     deploy:
-      replicas: ${FRONTEND_REPLICAS}
+      replicas: ${FRONTEND_REPLICAS:-1}
     depends_on:
       - backend
 
