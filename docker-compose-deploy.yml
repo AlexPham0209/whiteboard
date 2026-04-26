@@ -19,6 +19,8 @@ services:
       - SALT_ROUNDS=${SALT_ROUNDS}
     expose: 
       - ${BACKEND_PORT}
+    deploy:
+      replicas: ${BACKEND_REPLICAS}
     depends_on:
       db:
         condition: service_healthy

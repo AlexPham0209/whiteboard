@@ -4,6 +4,12 @@ map $http_upgrade $connection_upgrade {
     ''      close;
 }
 
+# Load-balanced backend
+upstream backend_servers {
+    server backend:${BACKEND_PORT};
+    ip_hash;
+}
+
 # Load-balanced frontend
 upstream frontend_servers {
     server frontend:${FRONTEND_PORT};
@@ -28,7 +34,7 @@ server {
     location /backend/ {
         limit_req zone=mylimit burst=20 nodelay;
         
-        proxy_pass http://backend:${BACKEND_PORT}/; # Trailing slash strips "/backend/"
+        proxy_pass http://backend_servers/; # Trailing slash strips "/backend/"
 
         # Standard Headers
         proxy_set_header Host $host;
@@ -41,8 +47,8 @@ server {
     location /socket.io/ {
         limit_req zone=mylimit burst=20 nodelay;
 
-        proxy_pass http://backend:${BACKEND_PORT};
-        
+        proxy_pass http://backend_servers;
+
         # Standard Headers
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
