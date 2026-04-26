@@ -6,8 +6,8 @@ map $http_upgrade $connection_upgrade {
 
 # Load-balanced backend
 upstream backend_servers {
-    server backend:${BACKEND_PORT};
     ip_hash;
+    server backend:${BACKEND_PORT};
 }
 
 # Load-balanced frontend

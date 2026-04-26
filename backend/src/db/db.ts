@@ -8,8 +8,8 @@ const pool = new Pool({
   port: process.env.POSTGRES_PORT ? Number(process.env.POSTGRES_PORT) : 5432,
 });
 
-pool.on("error", (err) => {
-  console.error("Postgres error", err);
-});
+// pool.on("error", (err) => {
+//   console.error("Postgres error", err);
+// });
 
 export default pool;

@@ -35,3 +35,4 @@ USER node
  
 # Run `serve` directly to serve the built app
 CMD ["sh", "-c", "./node_modules/.bin/serve -s dist -l tcp://0.0.0.0:${FRONTEND_PORT}"]
+
