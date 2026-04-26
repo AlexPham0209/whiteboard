@@ -5,7 +5,7 @@ services:
     command: ["npm", "run", "test"]
     environment:
       - NODE_ENV=${NODE_ENV}
-      - SERVER_PORT=${SERVER_PORT}
+      - BACKEND_PORT=${BACKEND_PORT}
       - POSTGRES_HOST=${POSTGRES_HOST}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
@@ -17,8 +17,6 @@ services:
       - JWT_EXPIRATION=${JWT_EXPIRATION}
       - JWT_REFRESH_EXPIRATION=${JWT_REFRESH_EXPIRATION}
       - SALT_ROUNDS=${SALT_ROUNDS}
-    ports:
-      - ${SERVER_PORT}:${SERVER_PORT}
     depends_on:
       db:
         condition: service_healthy
