@@ -192,6 +192,7 @@ I chose the Node base image for my frontend because my frontend is a Vite React 
 We use the following schema for our database model.
 ![Database Schema](images/drawSQL-image-export-2026-02-08.png)
 
+
 ## Authentication
 
 For authentication, users require both a JWT refresh and access token.

@@ -43,7 +43,7 @@ export const authenticateSocket = async (
 ) => {
   const token = socket.handshake.auth.token;
   if (!token) return next(createExtendedError("Missing token", 401));
-
+  
   try {
     const decoded = jwt.verify(token, SECRET) as JwtPayload;
     const { userId, username } = decoded.data;
