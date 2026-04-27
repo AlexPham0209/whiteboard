@@ -107,6 +107,6 @@ jobs:
           envs: NODE_ENV,NGINX_PORT,BACKEND_URL,BACKEND_PORT,FRONTEND_PORT,BACKEND_REPLICAS,FRONTEND_REPLICAS,CORS_ORIGINS,SALT_ROUNDS,POSTGRES_HOST,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_PORT,JWT_SECRET,JWT_REFRESH_SECRET,JWT_EXPIRATION,JWT_REFRESH_EXPIRATION,DOCKERHUB_USERNAME
           script: |
             cd whiteboard
-            docker compose -f docker-compose-deploy.yml pull
-            docker compose -f docker-compose-deploy.yml up
+            sudo docker compose -f docker-compose-deploy.yml pull
+            sudo docker compose -f docker-compose-deploy.yml up
           
