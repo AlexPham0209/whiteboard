@@ -108,5 +108,5 @@ jobs:
           script: |
             cd whiteboard
             sudo docker compose -f docker-compose-deploy.yml pull
-            sudo docker compose -f docker-compose-deploy.yml up
+            sudo docker compose -f docker-compose-deploy.yml up -d
           
