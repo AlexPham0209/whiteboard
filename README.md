@@ -190,7 +190,7 @@ I chose the Node base image for my frontend because my frontend is a Vite React 
 ## Database
 
 We use the following schema for our database model.
-![Database Schema](images/drawSQL-image-export-2026-02-08.png)
+![Database Schema](images/drawSQL-image-export-2026-04-27.jpg)
 
 
 ## Authentication
