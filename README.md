@@ -94,7 +94,7 @@ REST API Authentication:
 
 ### Backend Image
 
-```yaml
+```dockerfile
 FROM node:22.13.1 # Uses Node.js base image
 
 WORKDIR /app # Set working directory to the app directory
@@ -148,7 +148,7 @@ Functions:
 
 ### Frontend Image
 
-```yaml
+```dockerfile
 FROM node:22.13.0-alpine AS builder
 
 # Stage 1: Building React Application
