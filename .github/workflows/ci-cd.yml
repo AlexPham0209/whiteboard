@@ -77,6 +77,8 @@ jobs:
         uses: appleboy/ssh-action@v1
         env: 
           NODE_ENV: production
+          NGINX_PORT: ${{ vars.NGINX_PORT }}
+          BACKEND_URL: ${{ vars.BACKEND_URL }}
           FRONTEND_PORT: ${{ vars.FRONTEND_PORT }}
           BACKEND_PORT: ${{ vars.BACKEND_PORT }}
           CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
@@ -90,11 +92,12 @@ jobs:
           JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
           JWT_EXPIRATION: ${{ vars.JWT_EXPIRATION }}
           JWT_REFRESH_EXPIRATION: ${{ vars.JWT_REFRESH_EXPIRATION }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: NODE_ENV,FRONTEND_PORT,BACKEND_PORT,CORS_ORIGINS,SALT_ROUNDS,POSTGRES_HOST,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_PORT,JWT_SECRET,JWT_REFRESH_SECRET,JWT_EXPIRATION,JWT_REFRESH_EXPIRATION
+          envs: NODE_ENV,NGINX_PORT,BACKEND_URL,FRONTEND_PORT,BACKEND_PORT,CORS_ORIGINS,SALT_ROUNDS,POSTGRES_HOST,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_PORT,JWT_SECRET,JWT_REFRESH_SECRET,JWT_EXPIRATION,JWT_REFRESH_EXPIRATION,DOCKERHUB_USERNAME
           script: |
             cd whiteboard
             docker compose -f docker-compose-deploy.yml pull
