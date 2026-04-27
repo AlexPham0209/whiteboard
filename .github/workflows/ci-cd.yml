@@ -78,16 +78,23 @@ jobs:
         env: 
           NODE_ENV: production
           NGINX_PORT: ${{ vars.NGINX_PORT }}
+
           BACKEND_URL: ${{ vars.BACKEND_URL }}
-          FRONTEND_PORT: ${{ vars.FRONTEND_PORT }}
           BACKEND_PORT: ${{ vars.BACKEND_PORT }}
+          FRONTEND_PORT: ${{ vars.FRONTEND_PORT }}
+          
+          BACKEND_REPLICAS: ${{ vars.BACKEND_REPLICAS }}
+          FRONTEND_REPLICAS: ${{ vars.FRONTEND_REPLICAS }}
+          
           CORS_ORIGINS: ${{ vars.CORS_ORIGINS }}
           SALT_ROUNDS: ${{ vars.SALT_ROUNDS }}
+
           POSTGRES_HOST: ${{ secrets.POSTGRES_HOST }}
           POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_PORT: ${{ vars.POSTGRES_PORT }}
+
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
           JWT_EXPIRATION: ${{ vars.JWT_EXPIRATION }}
@@ -97,7 +104,7 @@ jobs:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: NODE_ENV,NGINX_PORT,BACKEND_URL,FRONTEND_PORT,BACKEND_PORT,CORS_ORIGINS,SALT_ROUNDS,POSTGRES_HOST,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_PORT,JWT_SECRET,JWT_REFRESH_SECRET,JWT_EXPIRATION,JWT_REFRESH_EXPIRATION,DOCKERHUB_USERNAME
+          envs: NODE_ENV,NGINX_PORT,BACKEND_URL,BACKEND_PORT,FRONTEND_PORT,BACKEND_REPLICAS,FRONTEND_REPLICAS,CORS_ORIGINS,SALT_ROUNDS,POSTGRES_HOST,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_PORT,JWT_SECRET,JWT_REFRESH_SECRET,JWT_EXPIRATION,JWT_REFRESH_EXPIRATION,DOCKERHUB_USERNAME
           script: |
             cd whiteboard
             docker compose -f docker-compose-deploy.yml pull
