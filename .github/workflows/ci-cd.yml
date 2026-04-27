@@ -97,6 +97,6 @@ jobs:
           envs: NODE_ENV,FRONTEND_PORT,BACKEND_PORT,CORS_ORIGINS,SALT_ROUNDS,POSTGRES_HOST,POSTGRES_DB,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_PORT,JWT_SECRET,JWT_REFRESH_SECRET,JWT_EXPIRATION,JWT_REFRESH_EXPIRATION
           script: |
             cd whiteboard
-            docker compose -f docker-compose.deploy.yml pull
-            docker compose -f docker-compose.deploy.yml up
+            docker compose -f docker-compose-deploy.yml pull
+            docker compose -f docker-compose-deploy.yml up
           
