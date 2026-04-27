@@ -1,8 +1,11 @@
 version: "latest"
 services:
   backend:
-    build: ./backend
     image: ${DOCKERHUB_USERNAME}/whiteboard-backend:latest
+    build: ./backend
+    user: "1000:1000"
+    cap_drop:
+      - ALL
     environment:
       - NODE_ENV=${NODE_ENV}
       - BACKEND_PORT=${BACKEND_PORT}
@@ -30,6 +33,9 @@ services:
       args:
         - BACKEND_URL=${BACKEND_URL}
         - BACKEND_PORT=${NGINX_PORT}
+    user: "1000:1000"
+    cap_drop:
+      - ALL
     environment:
       - FRONTEND_PORT=${FRONTEND_PORT}
       - NODE_ENV=${NODE_ENV}
@@ -47,6 +53,12 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
     restart: always
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
@@ -56,6 +68,13 @@ services:
 
   nginx:
     image: nginx:latest
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+      - CHOWN
+      - SETGID
+      - SETUID
     ports:
       - ${NGINX_PORT}:${NGINX_PORT}
     volumes:

@@ -30,9 +30,6 @@ COPY --link --from=builder /app/dist ./dist
 # Install only the `serve` package (no global install, pinned version)
 RUN --mount=type=cache,target=/root/.npm npm install serve@^14.2.6 --omit=dev
  
-# Run the container as a non-root user for security best practices
-USER node
- 
 # Run `serve` directly to serve the built app
 CMD ["sh", "-c", "./node_modules/.bin/serve -s dist -l tcp://0.0.0.0:${FRONTEND_PORT}"]
 
