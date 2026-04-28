@@ -206,16 +206,6 @@ I chose the Node base image for my frontend because my frontend is a Vite React 
 We use the following schema for our database model.
 ![Database Schema](images/drawSQL-image-export-2026-04-27.jpg)
 
-## Authentication
-
-For authentication, users require both a JWT refresh and access token which they can receive by logging in or registering.
-
-Refresh token: Long-lived token (7 days) that allows us to refresh our access token using the /auth/refresh endpoint. The access token is refreshed whenever a 401 error occurs (except for endpoint, /auth/refresh) or a web socket connection fails. Stored as an HTTPOnly cookie.
-
-Access token: Short-lived token (15 minutes) that grants us permission to establish a websocket connection and access /api route. Stored in Local Storage.
-
-After a user logs out, both the refresh and access token are removed.
-
 ## NGINX
 
 ### Reverse Proxy
@@ -237,6 +227,16 @@ Then, for each location directive, we define a burst limit with no delay. For th
 ### Load Balancing
 
 We are able to define the number of replicas/instances we can deploy for the frontend and backend server. Then, NGINX can automatically load balance requests across these replicas using Docker's internal DNS resolution.
+
+## Authentication
+
+For authentication, users require both a JWT refresh and access token which they can receive by logging in or registering.
+
+Refresh token: Long-lived token (7 days) that allows us to refresh our access token using the /auth/refresh endpoint. The access token is refreshed whenever a 401 error occurs (except for endpoint, /auth/refresh) or a web socket connection fails. Stored as an HTTPOnly cookie.
+
+Access token: Short-lived token (15 minutes) that grants us permission to establish a websocket connection and access /api route. Stored in Local Storage.
+
+After a user logs out, both the refresh and access token are removed.
 
 ## Networking
 
