@@ -8,7 +8,7 @@ Whiteboard is a website where users can draw anything on a virtual whiteboard!
 
 ![Draw](images/draw.gif)
 
-## Creating a room
+## Creating a new account
 
 - Start server
 - Go to localhost:2094/create
@@ -34,8 +34,6 @@ For the backend, we use Express.js to handle HTTP requests and Socket.io for rea
 We use PostgreSQL to store user data such as user information (usernames and hashed passwords), along with whiteboard data (rooms, lines, members, etc).
 
 Finally, we use NGINX to act as a reverse proxy as well as handle load balancing and rate-limiting.
-
-![Diagram showing how each component in stack communicates](images/whiteboard-diagram.png)
 
 ## Backend
 
@@ -95,21 +93,30 @@ REST API Authentication:
 ### Backend Image
 
 ```dockerfile
-FROM node:22.13.1 # Uses Node.js base image
+# Uses Node.js base image
+FROM node:22.13.1
 
-WORKDIR /app # Set working directory to the app directory
-COPY package*.json . # Copy package.json and package-lock.json into app directory of the container
+# Set working directory to the app directory
+WORKDIR /app 
 
-RUN npm install # Install all dependencies using package.json
-COPY . . # Copy all code and files (except those in .dockerignore) into working directory
-EXPOSE 3000 # Exposes port 3000
+# Copy package.json and package-lock.json into app directory of the container
+COPY package*.json . 
 
-CMD ["npm", "run", "start"] # On docker run, run the backend server
+# Install all dependencies using package.json
+RUN npm install 
+
+# Copy all code and files (except those in .dockerignore) into working directory
+COPY . . 
+
+# On docker run, run the backend server
+CMD ["npm", "run", "start"] 
 ```
 
 I chose the Node base image because my backend is a Node.js application.
 
 ## Frontend
+
+To easily manage state and functions that should be accessible to deep down the UI tree without having to pass them down as props, we use various contexts and hooks.  
 
 ### Auth Context
 
@@ -149,23 +156,30 @@ Functions:
 ### Frontend Image
 
 ```dockerfile
+# Using lightweight node:22.13 image to build our application
 FROM node:22.13.0-alpine AS builder
 
 # Stage 1: Building React Application
 WORKDIR /app
 
+# Setting VITE environment variables used during building
 ARG BACKEND_URL
 ARG BACKEND_PORT
 
 ENV VITE_BACKEND_URL=${BACKEND_URL}
 ENV VITE_BACKEND_PORT=${BACKEND_PORT}
 
+# Copy package.json and package-locl.json into working /app directory
 COPY package*.json .
 
+# Uses cache mount for /root/.npm to run `npm install --legacy-peer-deps` 
+# Helps persist unchanged dependencies across builds
 RUN --mount=type=cache,target=/root/.npm npm install --legacy-peer-deps
 
+# Copy all 
 COPY . . 
 
+# Build the current content
 RUN npm run build
 
 # Stage 2: Running React Application
@@ -192,13 +206,37 @@ I chose the Node base image for my frontend because my frontend is a Vite React 
 We use the following schema for our database model.
 ![Database Schema](images/drawSQL-image-export-2026-04-27.jpg)
 
-
 ## Authentication
 
-For authentication, users require both a JWT refresh and access token.
+For authentication, users require both a JWT refresh and access token which they can receive by logging in or registering.
 
-Refresh token: Long-lived token (7 days) that allows us to refresh our access token using the /auth/refresh endpoint.
-Access token: Short-lived token (15 minutes) that grants us permission to access resources (establish a websocket connection and access /api route).
+Refresh token: Long-lived token (7 days) that allows us to refresh our access token using the /auth/refresh endpoint. The access token is refreshed whenever a 401 error occurs (except for endpoint, /auth/refresh) or a web socket connection fails. Stored as an HTTPOnly cookie.
+
+Access token: Short-lived token (15 minutes) that grants us permission to establish a websocket connection and access /api route. Stored in Local Storage.
+
+After a user logs out, both the refresh and access token are removed.
+
+## NGINX
+
+### Reverse Proxy
+
+One of the primary purposes of the NGINX server is to act as a reverse proxy, an intermediary server that forwards client requests to the services in the internal network.
+
+Locations:
+
+- / - Redirects traffic to frontend servers.
+- /backend/ - Redirects HTTP requests to the various backend servers.
+- /socket.io/ - Redirects Socket.io connection connections to the backend servers.
+
+### Rate Limiting
+
+To prevent strain on the servers as well as prevent DDoS and brute force attacks, we implement rate limiting. For general traffic, we set the maximum request rate to 10 requests per second.
+
+Then, for each location directive, we define a burst limit with no delay. For the / and /backend/ locations, we set the burst to 10. While for the /socket.io/ location, we set the burst to 20.
+
+### Load Balancing
+
+We are able to define the number of replicas/instances we can deploy for the frontend and backend server. Then, NGINX can automatically load balance requests across these replicas using Docker's internal DNS resolution.
 
 ## Networking
 

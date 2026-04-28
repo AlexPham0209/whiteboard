@@ -22,7 +22,7 @@ server {
 
     # Frontend
     location / {
-        limit_req zone=mylimit burst=20 nodelay;
+        limit_req zone=mylimit burst=10 nodelay;
 
         proxy_pass http://frontend_servers;
         proxy_set_header Host $host;
@@ -32,7 +32,7 @@ server {
     
     # REST API
     location /backend/ {
-        limit_req zone=mylimit burst=20 nodelay;
+        limit_req zone=mylimit burst=10 nodelay;
         
         proxy_pass http://backend_servers/; # Trailing slash strips "/backend/"
 
