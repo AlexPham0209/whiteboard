@@ -3,16 +3,16 @@
 Whiteboard is a website where users can draw anything on a virtual whiteboard!
 
 ![Create](images/register.gif)
-Create a new account!
+*Create a new account!*
 
 ![Join](images/join.gif)
-Join and create rooms!
+*Join and create rooms!*
 
 ![Draw](images/draw.gif)
-Draw with three colors: black, red, and blue.
+*Draw with three colors: black, red, and blue.*
 
 ![Timelapse](images/draw.gif)
-Draw to your heart's desire!
+*Draw to your heart's desire!*
 
 ## Deploying Locally
 
