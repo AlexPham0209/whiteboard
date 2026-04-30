@@ -29,7 +29,7 @@ services:
   frontend:
     image: ${DOCKERHUB_USERNAME}/whiteboard-frontend:latest
     build:
-      context: ./frontend
+      context: ./frontend/
       args:
         - BACKEND_URL=${BACKEND_URL}
         - BACKEND_PORT=${NGINX_PORT}

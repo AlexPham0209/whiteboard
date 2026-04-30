@@ -49,7 +49,7 @@ Auth Route:
 - /register: Creates a new user and sends an access and a refresh token.
 - /refresh: Verifies the refresh token and sends a new access token.
 
-Api Route
+Api Route:
 
 - /create: Creates a new room and sends the room code to the client.
 
@@ -212,7 +212,7 @@ We use the following schema for our database model.
 
 One of the primary purposes of the NGINX server is to act as a reverse proxy, an intermediary server that forwards client requests to the services in the internal network.
 
-Locations:
+URIs:
 
 - / - Redirects traffic to frontend servers.
 - /backend/ - Redirects HTTP requests to the various backend servers.
@@ -230,7 +230,7 @@ We are able to define the number of replicas/instances we can deploy for the fro
 
 ## Authentication
 
-For authentication, users require both a JWT refresh and access token which they can receive by logging in or registering.
+For authentication, users require both a refresh and access token which they can receive by logging in or registering.
 
 Refresh token: Long-lived token (7 days) that allows us to refresh our access token using the /auth/refresh endpoint. The access token is refreshed whenever a 401 error occurs (except for endpoint, /auth/refresh) or a web socket connection fails. Stored as an HTTPOnly cookie.
 
