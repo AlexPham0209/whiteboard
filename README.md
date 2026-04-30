@@ -12,8 +12,7 @@ Whiteboard is a website where users can draw anything on a virtual whiteboard!
 ![Draw](images/draw.gif)
 
 *Draw to your heart's desire!*
-![Timelapse](images/draw.gif)
-
+![Timelapse](images/timelapse.gif)
 
 ## Deploying Locally
 
