@@ -2,19 +2,29 @@
 
 Whiteboard is a website where users can draw anything on a virtual whiteboard!
 
-- Join and create private rooms!
-- Draw with three colors: black, red, and blue.
-- Draw to your heart's desire!
+![Create](images/register.gif)
+Create a new account!
+
+![Join](images/join.gif)
+Join and create rooms!
 
 ![Draw](images/draw.gif)
+Draw with three colors: black, red, and blue.
+
+![Timelapse](images/draw.gif)
+Draw to your heart's desire!
+
+## Deploying Locally
+
+- Create a new .env using .env.example as a template
+- Run the deploy.sh in /scripts folder
+- Go to localhost:{NGINX_PORT}
 
 ## Creating a new account
 
-- Start server
-- Go to localhost:2094/create
 - Enter your username and click join
 
-![Create](images/create.gif)
+
 
 ## Joining a room
 
