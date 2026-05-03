@@ -1,7 +1,6 @@
 import { io } from "socket.io-client";
 
 export const PORT = import.meta.env.VITE_BACKEND_PORT;
-console.log(import.meta.env.PROD);
 export const SOCKET_URL = import.meta.env.PROD
   ? `${import.meta.env.VITE_BACKEND_URL}`
   : `http://localhost:${PORT}`;
@@ -20,7 +19,6 @@ export const connect = () => {
       token: token,
     };
 
-    // console.log("Connecting to socket with token:", token);
     socket.connect();
   }
 };

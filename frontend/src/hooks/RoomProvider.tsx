@@ -135,23 +135,6 @@ export const RoomProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [joinRoom, roomCode, isRoomJoined, leaveRoom]);
 
-  // useEffect(() => {
-  //   const localChanged = async () => {
-  //     if (localStorage.getItem('access_token'))
-  //       return;
-
-  //     const token = await refreshToken();
-  //     if (!token)
-  //       logout();
-  //   };
-
-  //   window.addEventListener('storage', localChanged);
-
-  //   return () => {
-  //     window.removeEventListener('storage', localChanged);
-  //   }
-  // }, [refreshToken, logout]);
-
   return (
     <RoomContext.Provider
       value={{
