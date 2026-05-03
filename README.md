@@ -30,7 +30,7 @@ We use PostgreSQL to store user data such as user information (usernames and has
 
 Finally, we use NGINX to act as a reverse proxy as well as handle load balancing and rate-limiting.
 
-![How services in the stack communicate with one another](images/diagram.gif)
+![How services in the stack communicate with one another](images/diagram.png)
 
 ## Backend
 
