@@ -17,23 +17,8 @@ Whiteboard is a website where users can draw anything on a virtual whiteboard!
 ## Deploying Locally
 
 - Create a new .env using .env.example as a template
-- Run the deploy.sh in /scripts folder
+- Run the deploy.sh in the scripts folder
 - Go to localhost:{NGINX_PORT}
-
-## Creating a new account
-
-- Enter your username and click join
-
-
-
-## Joining a room
-
-- Got to localhost:2094/join
-- Get room code from your friend
-- Enter your username and room code
-- Click join
-
-![Join](images/join.gif)
 
 ## Stack Overview
 
@@ -248,8 +233,22 @@ Access token: Short-lived token (15 minutes) that grants us permission to establ
 
 After a user logs out, both the refresh and access token are removed.
 
+## Deployment
+
+For hosting, we chose to use Cloudlab both for the ease of use and creation.
+
+Then using Github Actions, we first push changes to our frontend and backend images to Dockerhub. Then, in a separate action, we ssh into our Cloudlab experiment using the Appleboy action.
+
+Once ssh-ing into our experiment, we open the project directory, pull the latest changes to our images and recreate our containers.
+
+## Testing
+
+To test the model functions and database queries, we spun up a testing container with an empty database and use Vitest to run all our tests in parallel.
+
+For each test, we use the ROLLBACK command to discard all changes each test client makes, preventing race conditions.
+
 ## Networking
 
-The PostgreSQL database server is accessible to every service in stack using DNS resolution by container name.
+All containers in the application are able to communicate with one another using their domain names due to them being apart of the same internal network by default.
 
-The frontend and the backend are both exposed to the internet. So, the frontend is able to communicate with the backend using HTTP requests and socket events.
+The only service/container has their port published is the NGINX server in order to allow clients outside of the network to access the services.
